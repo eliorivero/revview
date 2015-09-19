@@ -1,0 +1,52 @@
+# Copyright (C) 2015 Revview
+# This file is distributed under the same license as the Revview package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Revview 1.0\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/revview\n"
+"POT-Creation-Date: 2015-09-19 22:19:55+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: wp-rest-public-revisions-controller.php:106
+#: wp-rest-public-revisions-controller.php:155
+msgid "Invalid post parent ID."
+msgstr ""
+
+#: wp-rest-public-revisions-controller.php:136
+msgid "Revisions are unavailable for this trashed post."
+msgstr ""
+
+#: wp-rest-public-revisions-controller.php:160
+msgid "Invalid post revision ID."
+msgstr ""
+
+#: wp-rest-public-revisions-controller.php:279
+msgid "There is no excerpt because this is a protected post."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Revview"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/eliorivero/revview"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Displays revisions of a post using REST API. Requires <a href=\"https://"
+"github.com/WP-API/WP-API\">REST API plugin 2.0</a>."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Elio Rivero"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://queryloop.com/"
+msgstr ""
