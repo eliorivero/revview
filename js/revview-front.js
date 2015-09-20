@@ -9,7 +9,7 @@ var revview;
 	'use strict';
 
 	var RevisionList = Backbone.Collection.extend( {
-			url: revview.root + 'wp/v2/posts/' + revview.post_id + '/revisions/public'
+			url: revview.root + 'revview/posts/' + revview.post_id + '/revisions/public'
 		} ),
 
 		RevisionView = Backbone.View.extend( {
