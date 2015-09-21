@@ -35,8 +35,9 @@ class Revview {
 		add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
-		// Example
-		add_filter( 'the_content', array( $this, 'revview_example' ) );
+		add_filter( 'the_title', array( $this, 'revview_title' ) );
+		add_filter( 'the_content', array( $this, 'revview_content' ) );
+		add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
 	}
 
 	/**
@@ -104,14 +105,36 @@ class Revview {
 	}
 
 	/**
-	 * Simple example that outputs a div.revview so the revisions are displayed before the content.
+	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the title.
+	 *
+	 * @param string $title
+	 *
+	 * @return string
+	 */
+	function revview_title( $title = '' ) {
+		return $title . '<span class="revview-title"></span>';
+	}
+
+	/**
+	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the content.
 	 *
 	 * @param string $content
 	 *
 	 * @return string
 	 */
-	function revview_example( $content = '' ) {
-		return '<div class="revview"></div>' . $content;
+	function revview_content( $content = '' ) {
+		return '<div class="revview-content"></div>' . $content;
+	}
+
+	/**
+	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the excerpt.
+	 *
+	 * @param string $excerpt
+	 *
+	 * @return string
+	 */
+	function revview_excerpt( $excerpt = '' ) {
+		return $excerpt . '<div class="revview-excerpt"></div>';
 	}
 }
 
