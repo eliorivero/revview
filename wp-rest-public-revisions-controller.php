@@ -58,7 +58,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	 */
 	public function register_routes() {
 
-		register_rest_route( 'revview', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions', array(
+		register_rest_route( 'revview/v1', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions', array(
 			array(
 				'methods'         => WP_REST_Server::READABLE,
 				'callback'        => array( $this, 'get_items' ),
@@ -76,7 +76,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
 
-		register_rest_route( 'revview', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions/ids', array(
+		register_rest_route( 'revview/v1', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions/ids', array(
 			array(
 				'methods'         => WP_REST_Server::READABLE,
 				'callback'        => array( $this, 'get_revision_ids' ),
@@ -94,7 +94,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
 
-		register_rest_route( 'revview', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions/(?P<revision_id>[\d]+)', array(
+		register_rest_route( 'revview/v1', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions/(?P<revision_id>[\d]+)', array(
 			array(
 				'methods'         => WP_REST_Server::READABLE,
 				'callback'        => array( $this, 'get_item' ),
