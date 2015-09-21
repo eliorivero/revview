@@ -67,6 +67,9 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 					'context'          => array(
 						'default'      => 'view',
 					),
+					'parent_id'	  => array(
+						'validate_callback' => array( $this, 'validate_post_id' )
+					),
 				),
 			),
 
@@ -82,12 +85,32 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 					'context'          => array(
 						'default'      => 'view',
 					),
+					'parent_id'	  => array(
+						'validate_callback' => array( $this, 'validate_post_id' )
+					),
+					'revision_id' => array(
+						'validate_callback' => array( $this, 'validate_post_id' )
+					),
 				),
 			),
 
 			'schema' => array( $this, 'get_public_item_schema' ),
 		) );
 
+	}
+
+	/**
+	 * Checks whether the parameter is potentially a valid post ID.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param int $parameter
+	 *
+	 * @return bool
+	 */
+	public function validate_post_id( $parameter = 0 ) {
+		return ( is_numeric( $parameter ) && $parameter > 0 );
 	}
 
 	/**
