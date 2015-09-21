@@ -262,7 +262,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			$response->add_link( 'parent', rest_url( sprintf( 'wp/%s/%d', $this->parent_base, $data['parent'] ) ) );
 		}
 
-		return apply_filters( 'rest_prepare_' . $post->post_type . '_revision', $response, $post, $request );
+		return apply_filters( 'rest_prepare_' . $post->post_type . '_public_revisions', $response, $post, $request );
 	}
 
 	/**
