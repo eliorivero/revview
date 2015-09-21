@@ -64,8 +64,26 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 				'callback'        => array( $this, 'get_items' ),
 				'permission_callback' => array( $this, 'get_items_permissions_check' ),
 				'args'            => array(
-					'context'          => array(
-						'default'      => 'view',
+					'context'     => array(
+						'default' => 'view',
+					),
+					'parent_id'	  => array(
+						'validate_callback' => array( $this, 'validate_post_id' )
+					),
+				),
+			),
+
+			'schema' => array( $this, 'get_public_item_schema' ),
+		) );
+
+		register_rest_route( 'revview', '/' . $this->parent_base . '/(?P<parent_id>[\d]+)/revisions/ids', array(
+			array(
+				'methods'         => WP_REST_Server::READABLE,
+				'callback'        => array( $this, 'get_revision_ids' ),
+				'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				'args'            => array(
+					'context'     => array(
+						'default' => 'view',
 					),
 					'parent_id'	  => array(
 						'validate_callback' => array( $this, 'validate_post_id' )
@@ -82,8 +100,8 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 				'callback'        => array( $this, 'get_item' ),
 				'permission_callback' => array( $this, 'get_item_permissions_check' ),
 				'args'            => array(
-					'context'          => array(
-						'default'      => 'view',
+					'context'     => array(
+						'default' => 'view',
 					),
 					'parent_id'	  => array(
 						'validate_callback' => array( $this, 'validate_post_id' )
@@ -134,6 +152,31 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		$struct = array();
 		foreach ( $revisions as $revision ) {
 			$struct[] = $this->prepare_item_for_response( $revision, $request );
+		}
+		return $struct;
+	}
+
+	/**
+	 * Get a collection of IDs of revisions.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function get_revision_ids( $request ) {
+
+		$parent = get_post( $request['parent_id'] );
+		if ( ! $request['parent_id'] || ! $parent || $this->parent_post_type !== $parent->post_type ) {
+			return new WP_Error( 'rest_post_invalid_parent_id', __( 'Invalid post parent ID.' ), array( 'status' => 404 ) );
+		}
+
+		$revisions = wp_get_post_revisions( $request['parent_id'] );
+
+		$struct = array();
+		foreach ( $revisions as $revision ) {
+			$struct[] = $this->prepare_ids_for_response( $revision, $request );
 		}
 		return $struct;
 	}
@@ -263,6 +306,40 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		}
 
 		return apply_filters( 'rest_prepare_' . $post->post_type . '_public_revisions', $response, $post, $request );
+	}
+
+	/**
+	 * Prepare the revision for the REST response
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param mixed $post WordPress representation of the revision.
+	 * @param WP_REST_Request $request Request object.
+	 * @return array
+	 */
+	public function prepare_ids_for_response( $post, $request ) {
+		$GLOBALS['post'] = $post;
+		setup_postdata( $post );
+
+		// Base fields for every post
+		$data = array(
+			'id' => $post->ID,
+		);
+
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$data = $this->filter_response_by_context( $data, $context );
+		$data = $this->add_additional_fields_to_object( $data, $request );
+		$response = rest_ensure_response( $data );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! empty( $data['parent'] ) ) {
+			$response->add_link( 'parent', rest_url( sprintf( 'wp/%s/%d', $this->parent_base, $data['parent'] ) ) );
+		}
+
+		return apply_filters( 'rest_prepare_' . $post->post_type . '_public_revision_ids', $response, $post, $request );
 	}
 
 	/**
