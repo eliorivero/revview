@@ -74,18 +74,34 @@ class Revview {
 	 * @access public
 	 */
 	public function register_assets() {
-		global $wp_post_types;
-		$post_type = get_post_type();
-		if ( is_singular() && isset( $wp_post_types[$post_type] ) && isset( $wp_post_types[$post_type]->show_in_rest ) &&
-		$wp_post_types[$post_type]->show_in_rest ) {
+		if ( is_singular() && $this->is_post_visible_in_rest() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
-			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'jquery', 'backbone', 'underscore', 'wp-util' ) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util' ) );
 			wp_localize_script( 'revview', 'revview', array(
 				'root' => esc_url_raw( get_rest_url() ),
 				'post_id' => get_the_ID(),
 			) );
 		}
+	}
+
+	/**
+	 * Checks if type of current post is visible in REST.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return bool
+	 */
+	public function is_post_visible_in_rest() {
+		static $is_visible;
+		if ( ! isset( $is_visible ) ) {
+			global $wp_post_types;
+			$post_type = get_post_type();
+			$is_visible = isset( $wp_post_types[$post_type] ) && isset( $wp_post_types[$post_type]->show_in_rest ) &&
+			$wp_post_types[$post_type]->show_in_rest;
+		}
+		return $is_visible;
 	}
 
 	/**
