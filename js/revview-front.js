@@ -9,7 +9,7 @@ var WP_API_Settings, revview;
 	'use strict';
 
 	var RevisionList = Backbone.Collection.extend( {
-			url: WP_API_Settings.root + 'revview/posts/' + revview.post_id + '/revisions/'
+			url: WP_API_Settings.root + 'revview/v1/posts/' + revview.post_id + '/revisions/'
 		} ),
 
 		RevisionView = Backbone.View.extend( {
