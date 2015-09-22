@@ -140,7 +140,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		return $this->is_rest_request() ? $title : $title . '<span class="revview-title"></span>';
+		return $this->is_rest_request() || ! in_the_loop() ? $title : $title . '<span class="revview-title"></span>';
 	}
 
 	/**
@@ -151,7 +151,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		return $this->is_rest_request() ? $content : '<div class="revview-content"></div>' . $content;
+		return $this->is_rest_request() || ! in_the_loop() ? $content : '<div class="revview-content"></div>' . $content;
 	}
 
 	/**
@@ -162,7 +162,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		return $this->is_rest_request() ? $excerpt : $excerpt . '<div class="revview-excerpt"></div>';
+		return $this->is_rest_request() || ! in_the_loop() ? $excerpt : $excerpt . '<div class="revview-excerpt"></div>';
 	}
 }
 
