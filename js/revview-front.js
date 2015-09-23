@@ -74,8 +74,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 				newRevision.fetch({
 					success: function( model ) {
-						console.log( 'New revision loaded model', model );
-
 						self.remove( self.at( index ) );
 						model.set( 'loaded', true );
 						self.add( model, { at: index, merge: true } );
@@ -112,15 +110,83 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	};
 
 	/**
+	 * Backbone Model for revision selector bar.
+	 */
+	revview.RevisionSelectorModel = Backbone.Model.extend({
+		defaults: {
+			value: null,
+			values: null,
+			min: 0,
+			max: 1,
+			step: 1,
+			range: false,
+			currentRevision: 0
+		},
+
+		initialize: function() {
+			// Listen for internal changes
+			this.on( 'change:currentRevision', this.update );
+		},
+
+		update: function() {
+			console.log( this.get( 'currentRevision' ) );
+		}
+
+	});
+
+	/**
+	 * Backbone View for single revision selector.
+	 */
+	revview.RevisionSelectorView = Backbone.View.extend( _.extend(
+		{
+			initialize: function(){
+				_.bindAll( this, 'stop' );
+			},
+
+			render: function(){
+				this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
+
+				this.$el.slider( _.extend( this.model.toJSON(), {
+					start: this.start,
+					slide: this.slide,
+					stop:  this.stop
+				}) );
+
+				// Add revision selectors
+				var selectors = this.model.get( 'revisions' ).invoke( 'pick', [ 'id', 'author_name', 'date' ] );
+				console.log( selectors );
+
+				return this;
+			},
+
+			selectRevision: function( index ) {
+				this.model.set( 'currentRevision', index );
+				this.trigger( 'change:currentRevision' );
+			},
+
+			stop: function( e, where ) {
+				this.selectRevision( where.value );
+			}
+
+		}, ViewMixins )
+	);
+
+	revview.RevisionInterfaceModel = Backbone.Model.extend({
+		defaults: {
+			currentRevisionIndex: 0
+		}
+	});
+
+	/**
 	 * Backbone View for interface to select revisions.
 	 */
 	revview.RevisionInterface = Backbone.View.extend( _.extend(
 		{
-			tagName: 'ul',
-
 			className: 'revview-revision-list',
 
 			current: {},
+
+			revisionItem: {},
 
 			initialize: function() {
 				var self = this;
@@ -131,13 +197,21 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					$excerpt: $('.revview-excerpt').eq(0).parent()
 				};
 
+				self.revisionSelector = new revview.RevisionSelectorModel;
+
+				self.revisionItem = new revview.RevisionSelectorView({
+					model: self.revisionSelector
+				});
+
 				self.showLoading();
 				RevisionList.fetch( {
 					success: function( collection ) {
 						console.log( 'Revision collection', collection );
 						if ( collection.length > 0 ) {
 							self.hideLoading();
-							// Add revision selectors
+							self.model.set( 'revisions', collection );
+							self.revisionItem.model.set( 'revisions', collection );
+							self.listenTo( self.revisionSelector, 'change:currentRevision', self.placeRevision );
 							$( '.revview-content' ).append( $( self.render().el ).fadeIn() );
 						}
 					}
@@ -145,57 +219,30 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			},
 
 			render: function () {
-				RevisionList.each( function ( revision ) {
-					var revisionListItem = new revview.RevisionSelectorItemView( { model: revision } );
-					this.$el.append( revisionListItem.el );
-				}, this );
+				this.$el.append( this.revisionItem.render().el );
 				return this;
-			}
-		}, ViewMixins )
-	);
-
-	/**
-	 * Backbone View for single revision selector.
-	 */
-	revview.RevisionSelectorItemView = Backbone.View.extend( _.extend(
-		{
-			tagName: 'li',
-
-			template: wp.template( 'revview-list-item' ),
-
-			index: 0,
-
-			events: {
-				'click .revview-revision-item' : 'placeRevision'
-			},
-
-			initialize: function(){
-				this.index = this.model.collection.indexOf( this.model );
-				console.log( this.index );
-				this.render();
-			},
-
-			render: function(){
-				this.$el.append( this.template( this.model.toJSON() ) );
 			},
 
 			placeRevision: function() {
-				var self = this;
+				var self = this,
+					currentRevision = self.revisionSelector.get( 'currentRevision' );
+
 				self.showLoading();
-				RevisionList.getRevision( this.index, function( foundRevision ) {
+				RevisionList.getRevision( currentRevision, function ( foundRevision ) {
 					self.hideLoading();
 					console.log( 'Revision found', foundRevision );
 				} );
 			}
 		}, ViewMixins )
 	);
-
 	// Load all revision IDs
 	var RevisionList = new revview.RevisionList;
 
 	$(document).ready(function(){
 
-		var RevisionInterface = new revview.RevisionInterface;
+		var RevisionInterface = new revview.RevisionInterface({
+			model: new revview.RevisionInterfaceModel
+		});
 
 	});
 
