@@ -96,10 +96,8 @@ class Revview {
 	public function is_post_visible_in_rest() {
 		static $is_visible;
 		if ( ! isset( $is_visible ) ) {
-			global $wp_post_types;
 			$post_type = get_post_type();
-			$is_visible = isset( $wp_post_types[$post_type] ) && isset( $wp_post_types[$post_type]->show_in_rest ) &&
-			$wp_post_types[$post_type]->show_in_rest;
+			$is_visible = in_array( $post_type, get_post_types( array( 'show_in_rest' => true ) )  );
 		}
 		return $is_visible;
 	}
