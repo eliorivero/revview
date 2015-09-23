@@ -226,7 +226,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			return new WP_Error( 'rest_post_invalid_revision_id', __( 'Invalid post revision ID.' ), array( 'status' => 404 ) );
 		}
 
-		return array( $this->prepare_item_for_response( $revision, $request ) );
+		return $this->prepare_item_for_response( $revision, $request );
 	}
 
 	/**
