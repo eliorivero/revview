@@ -75,7 +75,6 @@ class Revview {
 	 */
 	public function register_assets() {
 		if ( is_singular() && $this->is_post_visible_in_rest() ) {
-			add_action( 'wp_footer', array( $this, 'print_templates' ) );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider' ) );
 			wp_localize_script( 'revview', 'revview', array(
@@ -100,23 +99,6 @@ class Revview {
 			$is_visible = in_array( $post_type, get_post_types( array( 'show_in_rest' => true ) )  );
 		}
 		return $is_visible;
-	}
-
-	/**
-	 * Prints templates for revision display interface in front end.
-	 *
-	 * @since 1.0.0
-	 * @access public
-	 */
-	public function print_templates() {
-		?>
-		<script id="tmpl-revview-list-item" type="text/html">
-			<a class="revview-revision-item" data-revision_id="{{ data.id }}">
-				<span class="revview-revision-date">{{ data.date }}</span>
-				<span class="revview-revision-author">{{ data.author_name }}</span>
-			</a>
-		</script>
-		<?php
 	}
 
 	/**
