@@ -15,4 +15,4 @@ returns a single revision of a post
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
 ##Example
-As a simple example, in a singular view, it will display the title, date and content of all post revisions before the current content.
+As a simple example, in a singular view, it will display the date and author of all revisions. Further info can be seen in JS console. If revision is clicked, console will display the update.
