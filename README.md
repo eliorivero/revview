@@ -3,14 +3,24 @@ Provides public access to post revisions using the WordPress REST API. Requires 
 
 ##Endpoints
 The plugin adds two endpoints to display, for a given entry and provided that its post type is visible for REST, all revisions or a single revision:
+
+
 ```js
-wp-json/wp/v2/posts/(?P<parent_id>[\d]+)/revisions/public/
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/
 ```
 returns all revisions of a post
+
+
 ```js
-wp-json/wp/v2/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)
 ```
 returns a single revision of a post
+
+
+```js
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)
+```
+returns a list of objects for all revisions containing revision ID, author name and date.
 
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
