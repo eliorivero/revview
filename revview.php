@@ -120,18 +120,6 @@ class Revview {
 	}
 
 	/**
-	 * Checks whether this is a REST request or not.
-	 *
-	 * @since 1.0.0
-	 * @access public
-	 *
-	 * @return bool
-	 */
-	function is_rest_request() {
-		return defined( 'REST_REQUEST' ) && REST_REQUEST;
-	}
-
-	/**
 	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the title.
 	 *
 	 * @param string $title
@@ -139,7 +127,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		return $this->is_rest_request() || ! in_the_loop() ? $title : $title . '<span class="revview-title"></span>';
+		return in_the_loop() && is_main_query() ? $title . '<span class="revview-title"></span>' : $title;
 	}
 
 	/**
@@ -150,7 +138,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		return $this->is_rest_request() || ! in_the_loop() ? $content : '<div class="revview-content"></div>' . $content;
+		return in_the_loop() && is_main_query() ?'<div class="revview-content"></div>' . $content : $content;
 	}
 
 	/**
@@ -161,7 +149,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		return $this->is_rest_request() || ! in_the_loop() ? $excerpt : $excerpt . '<div class="revview-excerpt"></div>';
+		return in_the_loop() && is_main_query() ? $excerpt . '<div class="revview-excerpt"></div>' : $excerpt;
 	}
 }
 
