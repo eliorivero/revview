@@ -1,4 +1,4 @@
 /* Revview stylesheet */
-.revview-list {
-	background: #b6c669;
+.revview-revision-item {
+	cursor: pointer;
 }
