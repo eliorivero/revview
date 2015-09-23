@@ -198,11 +198,13 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			return true;
 		}
 
-		if ( 'trash' == $parent->post_status ) {
-			return new WP_Error( 'rest_cannot_read', __( 'Revisions are unavailable for this trashed post.' ), array( 'status' => 403 ) );
+		$post_status_object = get_post_status_object( $parent->post_status );
+
+		if ( $post_status_object->public && empty( $parent->post_password ) ) {
+			return true;
 		}
 
-		return true;
+		return new WP_Error( 'rest_cannot_read', __( 'Revisions are unavailable for this post.' ), array( 'status' => 403 ) );
 	}
 
 	/**
