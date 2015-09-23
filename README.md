@@ -18,7 +18,7 @@ returns a single revision of a post
 
 
 ```js
-wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)/ids
 ```
 returns a list of objects for all revisions containing revision ID, author name and date.
 
