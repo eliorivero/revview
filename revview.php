@@ -110,10 +110,11 @@ class Revview {
 	 */
 	public function print_templates() {
 		?>
-		<script id="tmpl-revview-revision" type="text/html">
-			<h3><a href="{{ data.link }}">{{ data.title.rendered }}</a></h3>
-			<div>{{ data.date }}</div>
-			<div>{{ data.content.rendered }}</div>
+		<script id="tmpl-revview-list-item" type="text/html">
+			<a class="revview-revision-item" data-revision_id="{{ data.id }}">
+				<span class="revview-revision-date">{{ data.date }}</span>
+				<span class="revview-revision-author">{{ data.author_name }}</span>
+			</a>
 		</script>
 		<?php
 	}
