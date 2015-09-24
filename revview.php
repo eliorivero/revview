@@ -114,8 +114,8 @@ class Revview {
 	public function print_templates() {
 		?>
 		<script id="tmpl-revview-tooltip" type="text/html">
-			<span class="revview-tooltip-date">{{ data.date }}</span>
-			<span class="revview-tooltip-author"><em><?php esc_html_e( 'By' ); ?></em> {{ data.author_name }}</span>
+			<span class="revview-tooltip-date">{{ data.display.date }}</span>
+			<span class="revview-tooltip-author"><em><?php esc_html_e( 'By', 'revview' ); ?></em> {{ data.display.author_name }}</span>
 		</script>
 		<script id="tmpl-revview-info" type="text/html">
 			<h4 class="revview-info-heading"><?php esc_html_e( 'Current Revision' ) ?></h4>

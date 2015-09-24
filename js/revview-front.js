@@ -110,7 +110,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	};
 
 	/**
-	 * Backbone Model for the tooltips with information about revision.
+	 * Backbone Model for the information about currently displayed revision.
 	 */
 	revview.RevisionInfoModel = Backbone.Model.extend({
 		defaults: {
@@ -139,12 +139,46 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	});
 
 	/**
+	 * Backbone Model for the tooltips with information about revision.
+	 */
+	revview.RevisionTooltipModel = Backbone.Model.extend({
+		defaults: {
+			display: {
+				author_name: '',
+				date: ''
+			},
+			mouseX: 0,
+			visible: false
+		}
+	});
+
+	/**
 	 * Backbone View for the tooltips with information about revision.
 	 */
 	revview.RevisionTooltipView = revview.RevisionInfoView.extend({
 		className: 'revview-tooltip',
 
-		template: wp.template( 'revview-tooltip' )
+		template: wp.template( 'revview-tooltip' ),
+
+		initialize: function() {
+			this.listenTo( this.model, 'change:display', this.render );
+			this.listenTo( this.model, 'change:mouseX', this.updatePosition );
+			this.listenTo( this.model, 'change:visible', this.updateVisibility );
+			this.$el.hide();
+		},
+
+		updatePosition: function() {
+			this.$el.css( 'left', this.model.get( 'mouseX' ) + 'px' );
+		},
+
+		updateVisibility: function() {
+			console.log( 'is visible', this.model.get( 'visible' ) );
+			if ( this.model.get( 'visible' ) ) {
+				this.$el.show();
+			} else {
+				this.$el.hide();
+			}
+		}
 	});
 
 	/**
@@ -178,11 +212,16 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	revview.RevisionSelectorView = Backbone.View.extend( {
 		events: {
 			'mousemove' : 'mouseMove',
-			'mouseleave' : 'mouseLeave'
+			'mouseleave' : 'mouseLeave',
+			'mouseenter' : 'mouseEnter'
 		},
 
+		currentRevisionIndex: 0,
+
 		initialize: function() {
-			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave' );
+			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter' );
+
+			this.refreshTooltip = _.throttle( this.refreshTooltip, 300 );
 		},
 
 		render: function() {
@@ -218,23 +257,27 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		mouseMove: function( e ) {
-			var revisionsLength   = this.model.get( 'revisions' ).length,
-				zoneCount         = revisionsLength - 1, // One fewer zone than models
-				sliderFrom        = this.offset( this.$el ), // "From" edge of slider
-				sliderWidth       = this.$el.width(), // Width of slider
-				tickWidth         = sliderWidth / zoneCount, // Calculated width of zone
-				actualX           = e.pageX - sliderFrom, // Flipped for RTL - sliderFrom;
-				currentModelIndex = Math.floor( ( actualX  + ( tickWidth / 2 )  ) / tickWidth ); // Calculate the model index
+			var revisionsLength = this.model.get( 'revisions' ).length,
+				zoneCount       = revisionsLength - 1, // One fewer zone than models
+				sliderFrom      = this.offset( this.$el ), // "From" edge of slider
+				sliderWidth     = this.$el.width(), // Width of slider
+				tickWidth       = sliderWidth / zoneCount, // Calculated width of zone
+				actualX         = e.pageX - sliderFrom; // Flipped for RTL - sliderFrom;
 
-			// Ensure sane value for currentModelIndex.
-			if ( currentModelIndex < 0 ) {
-				currentModelIndex = 0;
-			} else if ( currentModelIndex >= revisionsLength ) {
-				currentModelIndex = revisionsLength - 1;
+			this.currentRevisionIndex = Math.floor( ( actualX  + ( tickWidth / 2 )  ) / tickWidth ); // Calculate the model index
+
+			// Ensure sane value for this.currentRevisionIndex.
+			if ( this.currentRevisionIndex < 0 ) {
+				this.currentRevisionIndex = 0;
+			} else if ( this.currentRevisionIndex >= revisionsLength ) {
+				this.currentRevisionIndex = revisionsLength - 1;
 			}
 
+			// Move tooltip
+			RevisionTooltip.set( 'mouseX', actualX );
+
 			// Refresh tooltip with new info
-			this.refreshTooltip( currentModelIndex );
+			this.refreshTooltip();
 		},
 
 		offset: function( $obj ) {
@@ -242,13 +285,16 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			return win.width()  - offset.left - $obj.outerWidth();
 		},
 
-		mouseLeave: function() {
-			// Restore tooltip
-			//this.refreshTooltip( this.model.get( 'currentRevision' ) );
+		mouseEnter: function() {
+			RevisionTooltip.set( 'visible', true );
 		},
 
-		refreshTooltip: function( index ) {
-			RevisionTooltip.set( this.selectorRevisions[index] );
+		mouseLeave: function() {
+			RevisionTooltip.set( 'visible', false );
+		},
+
+		refreshTooltip: function() {
+			RevisionTooltip.set( 'display', this.selectorRevisions[this.currentRevisionIndex] );
 		}
 
 	} );
@@ -266,14 +312,14 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		{
 			id: 'revview',
 
-			current: {},
+			$current: {},
 
 			revisionItem: {},
 
 			initialize: function() {
 				var self = this;
 
-				self.current = {
+				self.$current = {
 					$title: $('.revview-title').eq(0).parent(),
 					$content: $('.revview-content').eq(0).parent(),
 					$excerpt: $('.revview-excerpt').eq(0).parent()
@@ -342,7 +388,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	// Load all revision IDs
 	var RevisionList = new revview.RevisionList,
 		RevisionSelector = new revview.RevisionSelectorModel,
-		RevisionTooltip = new revview.RevisionInfoModel,
+		RevisionTooltip = new revview.RevisionTooltipModel,
 		RevisionInfo = new revview.RevisionInfoModel,
 		RevisionInterface;
 
