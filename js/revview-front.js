@@ -1,5 +1,5 @@
 /**
- * Revview - Interface
+ * Revview Interface
  */
 
 var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
@@ -110,6 +110,44 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	};
 
 	/**
+	 * Backbone Model for the tooltips with information about revision.
+	 */
+	revview.RevisionInfoModel = Backbone.Model.extend({
+		defaults: {
+			author_name: '',
+			date: ''
+		}
+	});
+
+	/**
+	 * Backbone View for the tooltips with information about revision.
+	 */
+	revview.RevisionInfoView = Backbone.View.extend({
+		className: 'revview-info',
+
+		template: wp.template( 'revview-info' ),
+
+		initialize: function() {
+			this.listenTo( this.model, 'change', this.render );
+		},
+
+		render: function(){
+			this.$el.empty();
+			this.$el.append( this.template( this.model.toJSON() ) );
+			return this;
+		}
+	});
+
+	/**
+	 * Backbone View for the tooltips with information about revision.
+	 */
+	revview.RevisionTooltipView = revview.RevisionInfoView.extend({
+		className: 'revview-tooltip',
+
+		template: wp.template( 'revview-tooltip' )
+	});
+
+	/**
 	 * Backbone Model for revision selector bar.
 	 */
 	revview.RevisionSelectorModel = Backbone.Model.extend({
@@ -137,39 +175,80 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	/**
 	 * Backbone View for single revision selector.
 	 */
-	revview.RevisionSelectorView = Backbone.View.extend( _.extend(
-		{
-			initialize: function(){
-				_.bindAll( this, 'stop' );
-			},
+	revview.RevisionSelectorView = Backbone.View.extend( {
+		events: {
+			'mousemove' : 'mouseMove',
+			'mouseleave' : 'mouseLeave'
+		},
 
-			render: function(){
-				this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
+		initialize: function() {
+			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave' );
+		},
 
-				this.$el.slider( _.extend( this.model.toJSON(), {
-					start: this.start,
-					slide: this.slide,
-					stop:  this.stop
-				}) );
+		render: function() {
+			this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
 
-				// Add revision selectors
-				var selectors = this.model.get( 'revisions' ).invoke( 'pick', [ 'id', 'author_name', 'date' ] );
-				console.log( selectors );
+			this.selectorRevisions = this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] );
 
-				return this;
-			},
+			this.$el.slider( _.extend( this.model.toJSON(), {
+				stop: this.stop
+			}) );
 
-			selectRevision: function( index ) {
-				this.model.set( 'currentRevision', index );
-				this.trigger( 'change:currentRevision' );
-			},
+			var max = this.model.get( 'max' ),
+				spacing = 100 / max;
 
-			stop: function( e, where ) {
-				this.selectRevision( where.value );
+			for ( var i = 0; i <= max; i++ ) {
+				$( '<span class="revview-tick"></span>' ).css( 'left', ( spacing * i ) +  '%' ).appendTo( this.$el );
 			}
 
-		}, ViewMixins )
-	);
+			this.refreshTooltip(0);
+
+			return this;
+		},
+
+		selectRevision: function( index ) {
+			this.model.set( 'currentRevision', index );
+		},
+
+		stop: function( e, where ) {
+			this.selectRevision( where.value );
+		},
+
+		mouseMove: function( e ) {
+			var revisionsLength   = this.model.get( 'revisions' ).length,
+				zoneCount         = revisionsLength - 1, // One fewer zone than models
+				sliderFrom        = this.offset( this.$el ), // "From" edge of slider
+				sliderWidth       = this.$el.width(), // Width of slider
+				tickWidth         = sliderWidth / zoneCount, // Calculated width of zone
+				actualX           = e.pageX - sliderFrom, // Flipped for RTL - sliderFrom;
+				currentModelIndex = Math.floor( ( actualX  + ( tickWidth / 2 )  ) / tickWidth ); // Calculate the model index
+
+			// Ensure sane value for currentModelIndex.
+			if ( currentModelIndex < 0 ) {
+				currentModelIndex = 0;
+			} else if ( currentModelIndex >= revisionsLength ) {
+				currentModelIndex = revisionsLength - 1;
+			}
+
+			// Refresh tooltip with new info
+			this.refreshTooltip( currentModelIndex );
+		},
+
+		offset: function( $obj ) {
+			var offset = $obj.offset() || {top: 0, left: 0}, win = $(window);
+			return win.width()  - offset.left - $obj.outerWidth();
+		},
+
+		mouseLeave: function() {
+			// Restore tooltip
+			//this.refreshTooltip( this.model.get( 'currentRevision' ) );
+		},
+
+		refreshTooltip: function( index ) {
+			RevisionTooltip.set( this.selectorRevisions[index] );
+		}
+
+	} );
 
 	revview.RevisionInterfaceModel = Backbone.Model.extend({
 		defaults: {
@@ -182,7 +261,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	 */
 	revview.RevisionInterface = Backbone.View.extend( _.extend(
 		{
-			className: 'revview-revision-list',
+			id: 'revview',
 
 			current: {},
 
@@ -197,11 +276,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					$excerpt: $('.revview-excerpt').eq(0).parent()
 				};
 
-				self.revisionSelector = new revview.RevisionSelectorModel;
-
+				// Revision selector
 				self.revisionItem = new revview.RevisionSelectorView({
-					model: self.revisionSelector
+					model: RevisionSelector
 				});
+
+				// Revision tooltip
+				self.revisionItemTooltip = new revview.RevisionTooltipView({
+					model: RevisionTooltip
+				});
+
+				// Revision tooltip
+				self.revisionItemInfo = new revview.RevisionInfoView({
+					model: RevisionInfo
+				});
+
+				self.listenTo( self.revisionItem.model, 'change:currentRevision', self.placeRevision );
 
 				self.showLoading();
 				RevisionList.fetch( {
@@ -209,38 +299,53 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 						console.log( 'Revision collection', collection );
 						if ( collection.length > 0 ) {
 							self.hideLoading();
-							self.model.set( 'revisions', collection );
+
 							self.revisionItem.model.set( 'revisions', collection );
-							self.listenTo( self.revisionSelector, 'change:currentRevision', self.placeRevision );
-							$( '.revview-content' ).append( $( self.render().el ).fadeIn() );
+
+							// Add to page
+							$( 'body' ).append( $( self.render().el ).wrapInner('<div class="revview-revision-list" />').fadeIn() );
 						}
 					}
 				} );
 			},
 
 			render: function () {
+				this.$el.append( this.revisionItemTooltip.render().el );
 				this.$el.append( this.revisionItem.render().el );
+				this.$el.append( this.revisionItemInfo.render().el );
+				this.refreshInfo(0);
 				return this;
 			},
 
 			placeRevision: function() {
 				var self = this,
-					currentRevision = self.revisionSelector.get( 'currentRevision' );
+					currentRevision = self.revisionItem.model.get( 'currentRevision' );
 
 				self.showLoading();
 				RevisionList.getRevision( currentRevision, function ( foundRevision ) {
 					self.hideLoading();
 					console.log( 'Revision found', foundRevision );
+					self.refreshInfo( currentRevision );
 				} );
+			},
+
+			refreshInfo: function( index ) {
+				RevisionInfo.set( this.revisionItem.selectorRevisions[index] );
 			}
+
 		}, ViewMixins )
 	);
+
 	// Load all revision IDs
-	var RevisionList = new revview.RevisionList;
+	var RevisionList = new revview.RevisionList,
+		RevisionSelector = new revview.RevisionSelectorModel,
+		RevisionTooltip = new revview.RevisionInfoModel,
+		RevisionInfo = new revview.RevisionInfoModel,
+		RevisionInterface;
 
 	$(document).ready(function(){
 
-		var RevisionInterface = new revview.RevisionInterface({
+		RevisionInterface = new revview.RevisionInterface({
 			model: new revview.RevisionInterfaceModel
 		});
 

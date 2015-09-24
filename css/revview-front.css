@@ -1,24 +1,72 @@
-/* Revview stylesheet */
-.revview-revision-item {
+/**
+ * Revview stylesheet
+ */
+#revview {
+	display: block;
+	position: fixed;
+	top: 80px;
+	width: 50%;
+	left: 24%;
+	right: 24%;
+	background-color: #fff;
+	padding: 20px 2%;
+}
+.revview-revision-list {
+	position: relative;
+}
+
+.revview-revision-list .ui-slider {
+	height: 20px;
+	position: relative;
+	z-index: 1;
 	cursor: pointer;
 }
-.ui-slider {
-	position: relative;
-	height: 20px
-}
-.ui-slider:before {
+
+.revview-revision-list .ui-slider:before {
 	position: absolute;
-	top: 4px;
+	top: 10px;
 	width: 100%;
 	height: 1px;
 	content: "";
 	display: block;
 	background-color: #ccc;
 }
-.ui-slider-handle {
+
+.revview-revision-list .ui-slider-handle {
 	width: 20px;
-	height: 10px;
+	height: 20px;
 	display: inline-block;
-	background-color: #e14d43;
+	background-color: rgba(251, 0, 0, 0.58);
 	position: absolute;
+	top: 0;
+	margin-left: -9px;
+	border-radius: 9em;
+	cursor: pointer;
+	z-index: 1;
+}
+
+.revview-revision-list .revview-tick {
+	position: absolute;
+	top: 8px;
+	display: block;
+	width: 2px;
+	height: 5px;
+	background-color: #ccc;
+}
+
+.revview-revision-list .revview-tooltip {
+	position: absolute;
+	background-color: #eee;
+	top: -60px;
+	padding: 5px 10px;
+	text-align: center;
+	font-size: 14px;
+}
+.revview-tooltip .revview-tooltip-author {
+	display: block;
+}
+
+.revview-revision-list .revview-info-heading {
+	margin: 10px 0;
+	font-size: 16px;
 }
