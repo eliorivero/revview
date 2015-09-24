@@ -77,11 +77,14 @@ class Revview {
 		if ( is_singular() && $this->is_post_visible_in_rest() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
-			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider' ) );
-			wp_localize_script( 'revview', 'revview', array(
+			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
+			) );
+			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_js_variables', array(
 				'root' => esc_url_raw( get_rest_url() ),
 				'post_id' => get_the_ID(),
-			) );
+				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
+			) ) );
 		}
 	}
 

@@ -189,6 +189,9 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
 
 			this.selectorRevisions = this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] );
+			_.map( this.selectorRevisions, function( selectorRevision ) {
+				selectorRevision.date = revviewDate( revview.datetime_format, selectorRevision.date );
+			});
 
 			this.$el.slider( _.extend( this.model.toJSON(), {
 				stop: this.stop
