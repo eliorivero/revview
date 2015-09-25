@@ -170,17 +170,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			step: 1,
 			range: false,
 			currentRevision: 0
-		},
-
-		initialize: function() {
-			// Listen for internal changes
-			this.on( 'change:currentRevision', this.update );
-		},
-
-		update: function() {
-			console.log( this.get( 'currentRevision' ) );
 		}
-
 	});
 
 	/**
@@ -197,6 +187,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		initialize: function( args ) {
 			this.tooltip = args.tooltip;
+			this.app = args.app;
 
 			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter' );
 
@@ -222,13 +213,17 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				$( '<span class="revview-tick"></span>' ).css( 'left', ( spacing * i ) +  '%' ).appendTo( this.$el );
 			}
 
-			this.refreshTooltip(0);
-
 			return this;
 		},
 
+		/**
+		 * Update revision reference and information to be displayed.
+		 *
+		 * @param { number } index
+		 */
 		selectRevision: function( index ) {
-			this.model.set( 'currentRevision', index );
+			this.app.model.set( 'currentRevision', index );
+			this.app.model.set( 'currentInfo', this.selectorRevisions[index] );
 		},
 
 		stop: function( e, where ) {
@@ -278,16 +273,17 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 	} );
 
-	revview.RevisionInterfaceModel = Backbone.Model.extend({
+	revview.RevisionAppModel = Backbone.Model.extend({
 		defaults: {
-			currentRevisionIndex: 0
+			currentRevision: 0,
+			currentInfo: {}
 		}
 	});
 
 	/**
 	 * Backbone View for interface to select revisions.
 	 */
-	revview.RevisionInterface = Backbone.View.extend({
+	revview.RevisionApp = Backbone.View.extend({
 		id: 'revview',
 
 		current: {},
@@ -311,12 +307,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			// Revision selector
 			this.revisionItem = new revview.RevisionSelectorView({
 				model: RevisionSelector,
-				tooltip: this.revisionTooltip
+				tooltip: this.revisionTooltip,
+				app: this
 			});
 
 			this.listenTo( this.collection, 'request', this.showLoading );
 			this.listenTo( this.collection, 'sync', this.hideLoading );
-			this.listenTo( this.revisionItem.model, 'change:currentRevision', this.changeRevision );
+			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
 			this.listenToOnce( this.collection, 'sync', this.start );
 			this.listenTo( this.collection, 'change', this.placeRevision );
 
@@ -339,19 +336,28 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			return elements;
 		},
 
+		/**
+		 * Initializes UI preparing revision selector list with author name and date, adds UI to page and loads the latest revision saved.
+		 *
+		 * @param { Object } collection
+		 */
 		start: function( collection ) {
 			if ( collection.length > 0 ) {
-				console.log( 'Revision collection', collection );
+				// Load collection with only author name and date
 				this.revisionItem.model.set( 'revisions', collection );
-				$( 'body' ).append( $( this.render().el ).wrapInner('<div class="revview-revision-list" />').fadeIn() );
-				this.refreshInfo(0);
+
+				// Add revision UI to page
+				$( 'body' ).append( this.render().$el.fadeIn() );
+
+				// Load most recent revision
+				this.model.set( 'currentInfo', collection.at(0).toJSON() );
+				this.model.trigger( 'change:currentRevision' );
 			}
 		},
 
 		render: function () {
-			this.$el.append( this.revisionTooltip.render().el );
-			this.$el.append( this.revisionItem.render().el );
-			this.$el.append( this.revisionItemInfo.render().el );
+			this.$el.append( [this.revisionTooltip.render().el, this.revisionItem.render().el, this.revisionItemInfo.render().el] );
+			this.$el.wrapInner('<div class="revview-revision-list" />');
 			return this;
 		},
 
@@ -371,9 +377,17 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			}, this );
 
 			// Update revision information display
-			this.refreshInfo( this.revisionItem.model.get( 'currentRevision' ) );
+			this.refreshInfo( this.model.get( 'currentInfo' ) );
 		},
 
+		/**
+		 * Check if title, content or excerpt are available in the model, even if they're empty,
+		 * and return them as HTML for insertion.
+		 *
+		 * @param { Object } model
+		 * @param { string } field
+		 * @returns { String } Markup to insert.
+		 */
 		getHTML: function( model, field ) {
 			var properties = model.toJSON(),
 				rendered = '';
@@ -388,12 +402,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		changeRevision: function() {
 			this.showLoading();
-			this.collection.getRevision( this.revisionItem.model.get( 'currentRevision' ) );
+			this.collection.getRevision( this.model.get( 'currentRevision' ) );
 		},
 
-		refreshInfo: function( index ) {
-			if ( !_.isUndefined( this.revisionItem.selectorRevisions ) ) {
-				this.revisionItemInfo.model.set( this.revisionItem.selectorRevisions[index] );
+		refreshInfo: function( currentInfo ) {
+			if ( !_.isUndefined( currentInfo ) ) {
+				this.revisionItemInfo.model.set( currentInfo );
 			}
 		},
 
@@ -410,12 +424,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	var RevisionSelector = new revview.RevisionSelectorModel,
 		RevisionTooltip = new revview.RevisionTooltipModel,
 		RevisionInfo = new revview.RevisionInfoModel,
-		RevisionInterface;
+		RevisionApp;
 
 	$(document).ready(function(){
 
-		RevisionInterface = new revview.RevisionInterface({
-			model: new revview.RevisionInterfaceModel,
+		RevisionApp = new revview.RevisionApp({
+			model: new revview.RevisionAppModel,
 			collection: new revview.RevisionList
 		});
 
