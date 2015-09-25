@@ -294,11 +294,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		original: {},
 
 		initialize: function() {
-			this.original = {
-				$title: $('.revview-title').eq(0).parent(),
-				$content: $('.revview-content').eq(0).parent(),
-				$excerpt: $('.revview-excerpt').eq(0).parent()
-			};
+			// Get title, content and excerpt in page and save them
+			this.original = this.getAvailableElements();
 			this.current = this.original;
 
 			// Revision tooltip
@@ -326,6 +323,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.collection.fetch();
 		},
 
+		/**
+		 * Return available title, content and excerpt as jQuery objects.
+		 *
+		 * @returns { Object }
+		 */
+		getAvailableElements: function() {
+			var elements = {};
+			_.each( ['title', 'content', 'excerpt'], function ( element ) {
+				var $element = $( '.revview-' + element ).eq( 0 ).parent();
+				if ( $element.length > 0 ) {
+					elements[element] = $element;
+				}
+			} );
+			return elements;
+		},
+
 		start: function( collection ) {
 			if ( collection.length > 0 ) {
 				console.log( 'Revision collection', collection );
@@ -342,14 +355,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			return this;
 		},
 
+		/**
+		 * Replace current title, content and excerpt with those in selected revision.
+		 * Updates displayed revision information.
+		 *
+		 * @param { Object } model
+		 */
 		placeRevision: function( model ) {
 			this.hideLoading();
 			console.log( 'Revision found', model );
 
-			this.current.$title.empty().append( this.getHTML( model, 'title' ) );
-			this.current.$content.empty().append( this.getHTML( model, 'content') );
-			this.current.$excerpt.empty().append( this.getHTML( model, 'excerpt') );
+			// Place revision title, content and excerpt if each one exists.
+			_.each( this.current, function( $element, key ){
+				$element.empty().append( this.getHTML( model, key ) );
+			}, this );
 
+			// Update revision information display
 			this.refreshInfo( this.revisionItem.model.get( 'currentRevision' ) );
 		},
 
