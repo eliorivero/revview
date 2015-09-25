@@ -34,10 +34,7 @@ class Revview {
 		add_action( 'plugins_loaded', array( $this, 'localization' ) );
 		add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
-
-		add_filter( 'the_title', array( $this, 'revview_title' ) );
-		add_filter( 'the_content', array( $this, 'revview_content' ) );
-		add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
+		add_action( 'loop_start', array( $this, 'add_discoverable_elements' ) );
 	}
 
 	/**
@@ -125,6 +122,19 @@ class Revview {
 	}
 
 	/**
+	 * If a loop started, check if it's the main query, in which case, add filters to append divs.
+	 *
+	 * @param object $wp_query
+	 */
+	function add_discoverable_elements( $wp_query ) {
+		if ( $wp_query->is_main_query() ) {
+			add_filter( 'the_title', array( $this, 'revview_title' ) );
+			add_filter( 'the_content', array( $this, 'revview_content' ) );
+			add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
+		}
+	}
+
+	/**
 	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the title.
 	 *
 	 * @param string $title
@@ -132,7 +142,8 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		return in_the_loop() && is_main_query() ? $title . '<span class="revview-title"></span>' : $title;
+		remove_filter( 'the_title', array( $this, 'revview_title' ) );
+		return '<span class="revview-title"></span>' . $title;
 	}
 
 	/**
@@ -143,7 +154,8 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		return in_the_loop() && is_main_query() ?'<div class="revview-content"></div>' . $content : $content;
+		remove_filter( 'the_content', array( $this, 'revview_content' ) );
+		return '<div class="revview-content"></div>' . $content;
 	}
 
 	/**
@@ -154,7 +166,8 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		return in_the_loop() && is_main_query() ? $excerpt . '<div class="revview-excerpt"></div>' : $excerpt;
+		remove_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
+		return '<div class="revview-excerpt"></div>' . $excerpt;
 	}
 }
 
