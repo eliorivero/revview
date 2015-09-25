@@ -276,7 +276,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	revview.RevisionAppModel = Backbone.Model.extend({
 		defaults: {
 			currentRevision: 0,
-			currentInfo: {}
+			currentInfo: {},
+			initialized: false
 		}
 	});
 
@@ -289,10 +290,17 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		current: {},
 		original: {},
 
+		template: wp.template( 'revview-app' ),
+
+		events: {
+			'click .revview-start': 'startRevisions',
+			'click .revview-stop': 'stopRevisions'
+		},
+
 		initialize: function() {
 			// Get title, content and excerpt in page and save them
-			this.original = this.getAvailableElements();
-			this.current = this.original;
+			this.current = this.getAvailableElements();
+			this.original = this.saveOriginalHTML();
 
 			// Revision tooltip
 			this.revisionTooltip = new revview.RevisionTooltipView({
@@ -300,12 +308,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			});
 
 			// Current revision information
-			this.revisionItemInfo = new revview.RevisionInfoView({
+			this.revisionInfo = new revview.RevisionInfoView({
 				model: RevisionInfo
 			});
 
 			// Revision selector
-			this.revisionItem = new revview.RevisionSelectorView({
+			this.revisionSelector = new revview.RevisionSelectorView({
 				model: RevisionSelector,
 				tooltip: this.revisionTooltip,
 				app: this
@@ -314,10 +322,11 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.listenTo( this.collection, 'request', this.showLoading );
 			this.listenTo( this.collection, 'sync', this.hideLoading );
 			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
-			this.listenToOnce( this.collection, 'sync', this.start );
+			this.listenToOnce( this.collection, 'sync', this.firstSync );
 			this.listenTo( this.collection, 'change', this.placeRevision );
 
-			this.collection.fetch();
+			// Add revision UI to page
+			$( 'body' ).append( this.render().$el.fadeIn() );
 		},
 
 		/**
@@ -337,17 +346,73 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
+		 * Keep a copy of original HTML in title, content and excerpt to be restored.
+		 *
+		 * @returns { Object }
+		 */
+		saveOriginalHTML: function() {
+			var elements = {};
+			_.each( this.current, function( $element, key ) {
+				elements[key] = $element.html();
+			}, this );
+			return elements;
+		},
+
+		/**
+		 * Called by button to view revisions.
+		 */
+		startRevisions: function() {
+			this.showUI();
+			if ( this.model.get( 'initialized' ) ) {
+				this.model.trigger( 'change:currentRevision' );
+			} else {
+				this.model.set( 'initialized', true );
+				this.collection.fetch();
+			}
+		},
+
+		/**
+		 * Restores original title, content and excerpt.
+		 */
+		stopRevisions: function() {
+			this.hideUI();
+			_.each( this.current, function( $element, key ) {
+				$element.empty().append( this.original[key] );
+			}, this );
+		},
+
+		/**
+		 * Shows UI for revision selection. Hides start button, shows stop button.
+		 */
+		showUI: function() {
+			this.revisionInfo.$el.show();
+			this.revisionSelector.$el.show();
+			this.$el.find( '.revview-start' ).hide();
+			this.$el.find( '.revview-stop' ).show();
+		},
+
+		/**
+		 * Hides UI for revision selection. Hides stop button, shows start button.
+		 */
+		hideUI: function() {
+			this.revisionInfo.$el.hide();
+			this.revisionSelector.$el.hide();
+			this.$el.find( '.revview-start' ).show();
+			this.$el.find( '.revview-stop' ).hide();
+		},
+
+		/**
 		 * Initializes UI preparing revision selector list with author name and date, adds UI to page and loads the latest revision saved.
 		 *
 		 * @param { Object } collection
 		 */
-		start: function( collection ) {
+		firstSync: function( collection ) {
 			if ( collection.length > 0 ) {
 				// Load collection with only author name and date
-				this.revisionItem.model.set( 'revisions', collection );
+				this.revisionSelector.model.set( 'revisions', collection );
 
-				// Add revision UI to page
-				$( 'body' ).append( this.render().$el.fadeIn() );
+				this.$el.append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] );
+				this.$el.wrapInner('<div class="revview-revision-list" />');
 
 				// Load most recent revision
 				this.model.set( 'currentInfo', collection.at(0).toJSON() );
@@ -355,9 +420,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			}
 		},
 
-		render: function () {
-			this.$el.append( [this.revisionTooltip.render().el, this.revisionItem.render().el, this.revisionItemInfo.render().el] );
-			this.$el.wrapInner('<div class="revview-revision-list" />');
+		/**
+		 * Render revision selector.
+		 *
+		 * @returns {revview.RevisionApp}
+		 */
+		render: function() {
+			this.$el.append( this.template() );
 			return this;
 		},
 
@@ -407,7 +476,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		refreshInfo: function( currentInfo ) {
 			if ( !_.isUndefined( currentInfo ) ) {
-				this.revisionItemInfo.model.set( currentInfo );
+				this.revisionInfo.model.set( currentInfo );
 			}
 		},
 
