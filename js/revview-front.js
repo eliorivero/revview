@@ -346,11 +346,23 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.hideLoading();
 			console.log( 'Revision found', model );
 
-			this.current.$title.empty().append( $( '<div>' + model.toJSON().title.rendered + '</div>' ).html() );
-			this.current.$content.empty().append( $( '<div>' + model.toJSON().content.rendered + '</div>' ).html() );
-			this.current.$excerpt.empty().append( $( '<div>' + model.toJSON().excerpt.rendered + '</div>' ).html() );
+			this.current.$title.empty().append( this.getHTML( model, 'title' ) );
+			this.current.$content.empty().append( this.getHTML( model, 'content') );
+			this.current.$excerpt.empty().append( this.getHTML( model, 'excerpt') );
 
 			this.refreshInfo( this.revisionItem.model.get( 'currentRevision' ) );
+		},
+
+		getHTML: function( model, field ) {
+			var properties = model.toJSON(),
+				rendered = '';
+			if ( properties.hasOwnProperty( field ) ) {
+				var property = properties[field];
+				if ( ! _.isUndefined( property.rendered ) ) {
+					rendered = property.rendered;
+				}
+			}
+			return $( '<div>' + rendered + '</div>' ).html();
 		},
 
 		changeRevision: function() {
