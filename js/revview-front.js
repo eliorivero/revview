@@ -449,6 +449,14 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
+		 * Fired when the revision index changes. Will fetch the selected revision if the full data is not in collection.
+		 */
+		changeRevision: function() {
+			this.showLoading();
+			this.collection.getRevision( this.model.get( 'currentRevision' ) );
+		},
+
+		/**
 		 * Render revision selector.
 		 *
 		 * @returns {revview.RevisionApp}
@@ -495,11 +503,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				}
 			}
 			return $( '<div>' + rendered + '</div>' ).html();
-		},
-
-		changeRevision: function() {
-			this.showLoading();
-			this.collection.getRevision( this.model.get( 'currentRevision' ) );
 		},
 
 		refreshInfo: function( currentInfo ) {
