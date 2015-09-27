@@ -481,12 +481,23 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				$element.empty().append( this.getHTML( model, key ) );
 			}, this );
 
+			this.addTemplates( model.get( 'js_templates' ) );
 			this.loadAssets( model.get( 'assets' ) );
+
 			// Update revision information display
 			this.refreshInfo( this.model.get( 'currentInfo' ) );
 		},
 
 		/**
+		 * Parses information returned for styles and scripts.
+		 */
+		addTemplates: function( js_templates ) {
+			// If additional JS templates are required by the revision, add them
+			if ( ! _.isEmpty( js_templates ) ) {
+				$( 'body' ).append( $( js_templates ) );
+			}
+		},
+
 		/**
 		 * Parses information returned for styles and scripts.
 		 */

@@ -308,6 +308,8 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			$GLOBALS['wp_the_query'] = $GLOBALS['wp_query'];
 
 			$results = array();
+			// Save this to extract possible JS templates
+			$footer_html = '';
 
 			if ( have_posts() ) {
 
@@ -325,10 +327,12 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 				ob_start();
 				wp_footer();
 				while ( ob_get_length() ) {
-					ob_end_clean();
+					// Allow script tags with id and type. That is, like Media or Customizer templates.
+					$footer_html .= trim( (string) ob_get_clean() );
 				}
 
 				$data['assets'] = $this->prepare_styles_and_scripts( $results, $request );
+				$data['js_templates'] = $this->prepare_js_templates( $footer_html, $request );
 			}
 		}
 
@@ -348,6 +352,27 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Given a string that should represent an HTML, extract <script> tags and their inner content whose id begins with "tmpl-".
+	 * Example: <script id="tmpl-example">
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $html
+	 * @param WP_REST_Request $request
+	 *
+	 * @return mixed|void
+	 */
+	function prepare_js_templates( $html = '', $request ) {
+		$templates = '';
+		if ( ! empty( $html ) ) {
+			$script_tags = array();
+			$html = preg_match_all( '@(<script.*?id=["\']tmpl-.*?["\'].*?>.*?</script>)@si', $html, $script_tags );
+			if ( isset( $script_tags[0] ) && is_array( $script_tags[0] ) ) {
+				$templates = implode( "\n", array_unique( $script_tags[0] ) );
+			}
+		}
+		return apply_filters( 'revview_javascript_templates', $templates, $html, $request );
+	}
 
 	/**
 	 * Identify additional scripts required by the latest set of IS posts and provide the necessary data to the IS response handler.
