@@ -295,6 +295,43 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			);
 		}
 
+		$is_single_revision = $request->get_param( 'revision_id' );
+		if ( ! is_null( $is_single_revision ) ) {
+
+			$GLOBALS['wp_query'] = new WP_Query( array(
+				'p' => $post->ID,
+				'post_type' => 'revision',
+			) );
+			$GLOBALS['wp_query']->posts = array( $post );
+			$GLOBALS['wp_query']->post = $post;
+			$GLOBALS['wp_query']->post_count = 1;
+			$GLOBALS['wp_the_query'] = $GLOBALS['wp_query'];
+
+			$results = array();
+
+			if ( have_posts() ) {
+
+				ob_start();
+				wp_head();
+				while ( ob_get_length() ) {
+					ob_end_clean();
+				}
+
+				the_post();
+				the_title();
+				the_excerpt();
+				the_content();
+
+				ob_start();
+				wp_footer();
+				while ( ob_get_length() ) {
+					ob_end_clean();
+				}
+
+				$data['assets'] = $this->prepare_styles_and_scripts( $results, $request );
+			}
+		}
+
 		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
 		$data = $this->filter_response_by_context( $data, $context );
 		$data = $this->add_additional_fields_to_object( $data, $request );
@@ -308,6 +345,181 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		}
 
 		return apply_filters( 'rest_prepare_' . $post->post_type . '_public_revisions', $response, $post, $request );
+	}
+
+	/**
+
+	/**
+	 * Identify additional scripts required by the latest set of IS posts and provide the necessary data to the IS response handler.
+	 *
+	 * @param  array $results
+	 * @param  WP_REST_REQUEST $request
+	 *
+	 * @return array
+	 * @internal param $query_args
+	 * @internal param $wp_query
+	 *
+	 * @global   $wp_scripts, $wp_scripts
+	 * @uses     sanitize_text_field, add_query_arg
+	 */
+	function prepare_styles_and_scripts( $results, $request ) {
+
+		// Get scripts already loaded
+		/**
+		 * TODO: some way to know which scripts are loaded but must be re-executed after loading selected revision?
+		 * If the line below is replaced with
+		 * $sent_scripts = explode( ',', $request->get_header('x_wp_revview_scripts') );
+		 * a script that was loaded and run on page load, won't be loaded and run again when fetching a revision that needs it.
+		 * The following scripts are loaded for the revview UI so they never need to be loaded again.
+		 */
+		$sent_scripts = array( 'jquery-core', 'jquery-migrate', 'jquery', 'underscore', 'backbone', 'wp-api', 'wp-util', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse', 'jquery-ui-slider' );
+
+		// Parse and sanitize the script handles already output
+		$initial_scripts = is_array( $sent_scripts ) ? array_map( 'sanitize_text_field', $sent_scripts ) : false;
+
+		if ( is_array( $initial_scripts ) ) {
+			global $wp_scripts;
+
+			// Identify new scripts needed by the latest set of IS posts
+			$new_scripts = array_diff( $wp_scripts->done, $initial_scripts );
+
+			// If new scripts are needed, extract relevant data from $wp_scripts
+			if ( ! empty( $new_scripts ) ) {
+				$results['scripts'] = array();
+
+				foreach ( $new_scripts as $handle ) {
+					// Abort if somehow the handle doesn't correspond to a registered script
+					if ( ! isset( $wp_scripts->registered[ $handle ] ) )
+						continue;
+
+					// Provide basic script data
+					$script_data = array(
+						'handle'     => $handle,
+						'footer'     => ( is_array( $wp_scripts->in_footer ) && in_array( $handle, $wp_scripts->in_footer ) ),
+						'extra_data' => $wp_scripts->print_extra_script( $handle, false )
+					);
+
+					// Base source
+					$src = $wp_scripts->registered[ $handle ]->src;
+
+					// Take base_url into account
+					if ( strpos( $src, 'http' ) !== 0 )
+						$src = $wp_scripts->base_url . $src;
+
+					// Version and additional arguments
+					if ( null === $wp_scripts->registered[ $handle ]->ver )
+						$ver = '';
+					else
+						$ver = $wp_scripts->registered[ $handle ]->ver ? $wp_scripts->registered[ $handle ]->ver : $wp_scripts->default_version;
+
+					if ( isset( $wp_scripts->args[ $handle ] ) )
+						$ver = $ver ? $ver . '&amp;' . $wp_scripts->args[$handle] : $wp_scripts->args[$handle];
+
+					// Full script source with version info
+					$script_data['src'] = add_query_arg( 'ver', $ver, $src );
+
+					// Add script to data that will be returned to IS JS
+					array_push( $results['scripts'], $script_data );
+				}
+			}
+		}
+
+		// Expose additional script data to filters, but only include in final `$results` array if needed.
+		if ( ! isset( $results['scripts'] ) )
+			$results['scripts'] = array();
+
+		$results['scripts'] = apply_filters( 'revview_additional_scripts', $results['scripts'], $initial_scripts, $results );
+
+		if ( empty( $results['scripts'] ) )
+			unset( $results['scripts' ] );
+
+		// Parse and sanitize the style handles already output
+		$sent_styles = explode( ',', $request->get_header('x_wp_revview_styles') );
+		$initial_styles = is_array( $sent_styles ) ? array_map( 'sanitize_text_field', $sent_styles ) : false;
+
+		if ( is_array( $initial_styles ) ) {
+			global $wp_styles;
+
+			// Identify new styles needed by the latest set of IS posts
+			$new_styles = array_diff( $wp_styles->done, $initial_styles );
+
+			// If new styles are needed, extract relevant data from $wp_styles
+			if ( ! empty( $new_styles ) ) {
+				$results['styles'] = array();
+
+				foreach ( $new_styles as $handle ) {
+					// Abort if somehow the handle doesn't correspond to a registered stylesheet
+					if ( ! isset( $wp_styles->registered[ $handle ] ) )
+						continue;
+
+					// Provide basic style data
+					$style_data = array(
+						'handle' => $handle,
+						'media'  => 'all'
+					);
+
+					// Base source
+					$src = $wp_styles->registered[ $handle ]->src;
+
+					// Take base_url into account
+					if ( strpos( $src, 'http' ) !== 0 )
+						$src = $wp_styles->base_url . $src;
+
+					// Version and additional arguments
+					if ( null === $wp_styles->registered[ $handle ]->ver )
+						$ver = '';
+					else
+						$ver = $wp_styles->registered[ $handle ]->ver ? $wp_styles->registered[ $handle ]->ver : $wp_styles->default_version;
+
+					if ( isset($wp_styles->args[ $handle ] ) )
+						$ver = $ver ? $ver . '&amp;' . $wp_styles->args[$handle] : $wp_styles->args[$handle];
+
+					// Full stylesheet source with version info
+					$style_data['src'] = add_query_arg( 'ver', $ver, $src );
+
+					// Parse stylesheet's conditional comments if present, converting to logic executable in JS
+					if ( isset( $wp_styles->registered[ $handle ]->extra['conditional'] ) && $wp_styles->registered[ $handle ]->extra['conditional'] ) {
+						// First, convert conditional comment operators to standard logical operators. %ver is replaced in JS with the IE version
+						$style_data['conditional'] = str_replace( array(
+							'lte',
+							'lt',
+							'gte',
+							'gt'
+						), array(
+							'%ver <=',
+							'%ver <',
+							'%ver >=',
+							'%ver >',
+						), $wp_styles->registered[ $handle ]->extra['conditional'] );
+
+						// Next, replace any !IE checks. These shouldn't be present since WP's conditional stylesheet implementation doesn't support them, but someone could be _doing_it_wrong().
+						$style_data['conditional'] = preg_replace( '#!\s*IE(\s*\d+){0}#i', '1==2', $style_data['conditional'] );
+
+						// Lastly, remove the IE strings
+						$style_data['conditional'] = str_replace( 'IE', '', $style_data['conditional'] );
+					}
+
+					// Parse requested media context for stylesheet
+					if ( isset( $wp_styles->registered[ $handle ]->args ) )
+						$style_data['media'] = esc_attr( $wp_styles->registered[ $handle ]->args );
+
+					// Add stylesheet to data that will be returned to IS JS
+					array_push( $results['styles'], $style_data );
+				}
+			}
+		}
+
+		// Expose additional stylesheet data to filters, but only include in final `$results` array if needed.
+		if ( ! isset( $results['styles'] ) )
+			$results['styles'] = array();
+
+		$results['styles'] = apply_filters( 'revview_additional_styles', $results['styles'], $initial_styles, $results );
+
+		if ( empty( $results['styles'] ) )
+			unset( $results['styles' ] );
+
+		// Lastly, return the IS results array
+		return $results;
 	}
 
 	/**

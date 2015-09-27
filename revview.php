@@ -73,16 +73,43 @@ class Revview {
 	public function register_assets() {
 		if ( is_singular() && $this->is_post_visible_in_rest() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
+			add_action( 'wp_footer', array( $this, 'async_load_assets_loaded' ), 21 );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
 			) );
 			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_js_variables', array(
-				'root' => esc_url_raw( get_rest_url() ),
 				'post_id' => get_the_ID(),
-				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
+				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+				'styles' => array(),
+				'scripts' => array(),
 			) ) );
 		}
+	}
+
+	/**
+	 * Print scripts that are already loaded.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @global $wp_scripts, $wp_styles
+	 * @action wp_footer
+	 */
+	public function async_load_assets_loaded() {
+		global $wp_scripts, $wp_styles;
+
+		$scripts = is_a( $wp_scripts, 'WP_Scripts' ) ? $wp_scripts->done : array();
+		$scripts = apply_filters( 'revview_loaded_scripts', $scripts );
+
+		$styles = is_a( $wp_styles, 'WP_Styles' ) ? $wp_styles->done : array();
+		$styles = apply_filters( 'revview_loaded_styles', $styles );
+		?>
+		<script type="text/javascript">
+			jQuery.extend( revview.scripts, <?php echo json_encode( $scripts ); ?> );
+			jQuery.extend( revview.styles, <?php echo json_encode( $styles ); ?> );
+		</script>
+		<?php
 	}
 
 	/**

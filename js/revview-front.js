@@ -481,8 +481,95 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				$element.empty().append( this.getHTML( model, key ) );
 			}, this );
 
+			this.loadAssets( model.get( 'assets' ) );
 			// Update revision information display
 			this.refreshInfo( this.model.get( 'currentInfo' ) );
+		},
+
+		/**
+		/**
+		 * Parses information returned for styles and scripts.
+		 */
+		loadAssets: function( response ) {
+
+			// Check for and parse our response.
+			if ( _.isUndefined( response ) ) {
+				return;
+			}
+
+			// If additional scripts are required by the revision, parse them
+			if ( _.isObject( response.scripts ) ) {
+				// Count scripts that will be loaded
+				var countScripts = response.scripts.length - 1;
+				$( response.scripts ).each( function() {
+					var elementToAppendTo = this.footer ? 'body' : 'head';
+
+					// Add script handle to list of those already parsed
+					revview.scripts.push( this.handle );
+
+					// Output extra data, if present
+					if ( this.extra_data ) {
+						var data = document.createElement('script'),
+							dataContent = document.createTextNode( "//<![CDATA[ \n" + this.extra_data + "\n//]]>" );
+
+						data.type = 'text/javascript';
+						data.appendChild( dataContent );
+
+						document.getElementsByTagName( elementToAppendTo )[0].appendChild(data);
+					}
+
+					// Build script tag and append to DOM in requested location
+					var script = document.createElement('script');
+					script.type = 'text/javascript';
+					script.src = this.src;
+					script.id = this.handle;
+					script.onload = function(){
+						// When all scripts are loaded, trigger window 'onload' event.
+						if ( 0 === countScripts ) {
+							$( window ).trigger( 'load' );
+						}
+						// If script loaded, there's one less to load.
+						countScripts--;
+					};
+					script.onerror = function() {
+						// If some script failed to load, that's one less to load too.
+						countScripts--;
+					};
+
+					if ( 'wp-mediaelement' === this.handle && 'undefined' === typeof mejs ) {
+						self.wpMediaelement = {};
+						self.wpMediaelement.tag = script;
+						self.wpMediaelement.element = elementToAppendTo;
+						setTimeout( self.maybeLoadMejs.bind( self ), 250 );
+					} else {
+						document.getElementsByTagName( elementToAppendTo )[0].appendChild(script);
+					}
+				} );
+			}
+
+			// If additional stylesheets are required by the revision, parse them
+			if ( _.isObject( response.styles ) ) {
+				$( response.styles ).each( function() {
+					// Add stylesheet handle to list of those already parsed
+					revview.styles.push( this.handle );
+
+					// Build link tag
+					var style = document.createElement('link');
+					style.rel = 'stylesheet';
+					style.href = this.src;
+					style.id = this.handle + '-css';
+
+					// Destroy link tag if a conditional statement is present and either the browser isn't IE, or the conditional doesn't evaluate true
+					if ( this.conditional && ( ! isIE || ! eval( this.conditional.replace( /%ver/g, IEVersion ) ) ) ) {
+						style = false;
+					}
+
+					// Append link tag if necessary
+					if ( style ) {
+						document.getElementsByTagName('head')[0].appendChild(style);
+					}
+				} );
+			}
 		},
 
 		/**
