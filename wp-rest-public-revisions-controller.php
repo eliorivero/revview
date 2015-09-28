@@ -393,14 +393,14 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		/**
 		 * TODO: some way to know which scripts are loaded but must be re-executed after loading selected revision?
 		 * If the line below is replaced with
-		 * $sent_scripts = explode( ',', $request->get_header('x_wp_revview_scripts') );
+		 * $loaded_scripts = explode( ',', $request->get_header('x_wp_revview_scripts') );
 		 * a script that was loaded and run on page load, won't be loaded and run again when fetching a revision that needs it.
 		 * The following scripts are loaded for the revview UI so they never need to be loaded again.
 		 */
-		$sent_scripts = array( 'jquery-core', 'jquery-migrate', 'jquery', 'underscore', 'backbone', 'wp-api', 'wp-util', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse', 'jquery-ui-slider' );
+		$loaded_scripts = array( 'jquery-core', 'jquery-migrate', 'jquery', 'underscore', 'backbone', 'wp-api', 'wp-util', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse', 'jquery-ui-slider' );
 
 		// Parse and sanitize the script handles already output
-		$initial_scripts = is_array( $sent_scripts ) ? array_map( 'sanitize_text_field', $sent_scripts ) : false;
+		$initial_scripts = is_array( $loaded_scripts ) ? array_map( 'sanitize_text_field', $loaded_scripts ) : false;
 
 		if ( is_array( $initial_scripts ) ) {
 			global $wp_scripts;
@@ -459,8 +459,8 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			unset( $results['scripts' ] );
 
 		// Parse and sanitize the style handles already output
-		$sent_styles = explode( ',', $request->get_header('x_wp_revview_styles') );
-		$initial_styles = is_array( $sent_styles ) ? array_map( 'sanitize_text_field', $sent_styles ) : false;
+		$loaded_styles = explode( ',', $request->get_header('x_wp_revview_styles') );
+		$initial_styles = is_array( $loaded_styles ) ? array_map( 'sanitize_text_field', $loaded_styles ) : false;
 
 		if ( is_array( $initial_styles ) ) {
 			global $wp_styles;
