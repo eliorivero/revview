@@ -83,6 +83,7 @@ class Revview {
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
 				'styles' => array(),
 				'scripts' => array(),
+				'js_templates' => array(),
 			) ) );
 		}
 	}
@@ -108,6 +109,7 @@ class Revview {
 		<script type="text/javascript">
 			jQuery.extend( revview.scripts, <?php echo json_encode( $scripts ); ?> );
 			jQuery.extend( revview.styles, <?php echo json_encode( $styles ); ?> );
+			jQuery.extend( revview.js_templates, _.map( jQuery( 'script[id^="tmpl-"]' ), function( script ){ return script.id; } ) );
 		</script>
 		<?php
 	}

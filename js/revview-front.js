@@ -32,6 +32,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 						xhr.setRequestHeader( 'X-WP-Revview-Styles', revview.styles );
 						xhr.setRequestHeader( 'X-WP-Revview-Scripts', revview.scripts );
+						xhr.setRequestHeader( 'X-WP-Revview-JS-Templates', revview.js_templates );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
@@ -494,7 +495,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		addTemplates: function( js_templates ) {
 			// If additional JS templates are required by the revision, add them
 			if ( ! _.isEmpty( js_templates ) ) {
-				$( 'body' ).append( $( js_templates ) );
+				revview.js_templates = revview.js_templates.concat( _.pluck( js_templates, 'id' ) );
+				$( 'body' ).append( $( _.pluck( js_templates, 'content' ).join( '\n' ) ) );
 			}
 		},
 

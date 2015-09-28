@@ -363,12 +363,28 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	 * @return mixed|void
 	 */
 	function prepare_js_templates( $html = '', $request ) {
-		$templates = '';
+		$templates = array();
 		if ( ! empty( $html ) ) {
 			$script_tags = array();
-			$html = preg_match_all( '@(<script.*?id=["\']tmpl-.*?["\'].*?>.*?</script>)@si', $html, $script_tags );
-			if ( isset( $script_tags[0] ) && is_array( $script_tags[0] ) ) {
-				$templates = implode( "\n", array_unique( $script_tags[0] ) );
+			// Grab all script tags with where id starts with "tmpl-"
+			preg_match_all( '@(<script.*?id=["\']tmpl-.*?["\'].*?>.*?</script>)@si', $html, $script_tags );
+			if ( ! empty( $script_tags[0] ) ) {
+				$loaded_js_templates = explode( ',', $request->get_header('x_wp_revview_js_templates') );
+				$dom = new DOMDocument();
+				// Wrap in tags to be the XML root and avoid message "Extra content at the end of the document"
+				if ( $dom->loadXML( '<templates>' . join( "\n", $script_tags[0] ) . '</templates>' ) ) {
+					foreach ( $dom->getElementsByTagName( 'script' ) as $script_tag ) {
+						$script_id = $script_tag->attributes->getNamedItem( 'id' )->value;
+						// If script id is not among those JS templates already loaded...
+						if ( ! in_array( $script_id, $loaded_js_templates ) ) {
+							// add it to list to be returned
+							$templates[] = array(
+								'id' => $script_id,
+								'content' => $dom->saveHTML( $script_tag )
+							);
+						}
+					}
+				}
 			}
 		}
 		return apply_filters( 'revview_javascript_templates', $templates, $html, $request );
