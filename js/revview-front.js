@@ -91,7 +91,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					found = self.at( index );
 
 				if ( _.isObject( found ) && found.get( 'loaded' ) ) {
-					console.log( 'Returning already loaded model', found );
 					self.trigger( 'change', found );
 					return;
 				}
@@ -108,8 +107,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 						self.add( model, { at: index, merge: true } );
 
 						self.trigger( 'change', model );
-
-						console.log( 'Returning loaded model after insertion', found );
 					}
 				});
 			}
@@ -223,21 +220,26 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.refreshTooltip = _.throttle( this.refreshTooltip, 300 );
 		},
 
+		/**
+		 * For all revision models, format the date & time according to date & time specified in WP Admin > Settings.
+		 * Render revision selector bar adding tick marks.
+		 *
+		 * @returns {revview.RevisionSelectorView}
+		 */
 		render: function() {
-			this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
-
-			this.selectorRevisions = this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] );
-			_.map( this.selectorRevisions, function( selectorRevision ) {
-				selectorRevision.date = revviewDate( revview.datetime_format, selectorRevision.date );
+			this.selectorRevisions = _.each( this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] ), function( revision ) {
+				revision.date = revviewDate( revview.datetime_format, revision.date );
 			});
 
+			// Revision selection bar
+			this.model.set( 'max', this.model.get( 'revisions' ).length - 1 );
 			this.$el.slider( _.extend( this.model.toJSON(), {
 				stop: this.stop
 			}) );
 
+			// Tick marks
 			var max = this.model.get( 'max' ),
 				spacing = 100 / max;
-
 			for ( var i = 0; i <= max; i++ ) {
 				$( '<span class="revview-tick"></span>' ).css( 'left', ( spacing * i ) +  '%' ).appendTo( this.$el );
 			}
@@ -316,6 +318,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	revview.RevisionApp = Backbone.View.extend({
 		id: 'revview',
 
+		className: 'revview-off', // starts hidden
+
 		current: {},
 		original: {},
 
@@ -355,7 +359,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.listenTo( this.collection, 'change', this.placeRevision );
 
 			// Add revision UI to page
-			$( 'body' ).append( this.render().$el.fadeIn() );
+			$( 'body' ).append( this.render().$el );
 		},
 
 		/**
@@ -414,20 +418,16 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Shows UI for revision selection. Hides start button, shows stop button.
 		 */
 		showUI: function() {
-			this.revisionInfo.$el.show();
-			this.revisionSelector.$el.show();
-			this.$el.find( '.revview-start' ).hide();
-			this.$el.find( '.revview-stop' ).show();
+			this.$el.removeClass( 'revview-off' );
+			this.$el.addClass( 'revview-on' );
 		},
 
 		/**
 		 * Hides UI for revision selection. Hides stop button, shows start button.
 		 */
 		hideUI: function() {
-			this.revisionInfo.$el.hide();
-			this.revisionSelector.$el.hide();
-			this.$el.find( '.revview-start' ).show();
-			this.$el.find( '.revview-stop' ).hide();
+			this.$el.removeClass( 'revview-on' );
+			this.$el.addClass( 'revview-off' );
 		},
 
 		/**
@@ -440,11 +440,9 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				// Load collection with only author name and date
 				this.revisionSelector.model.set( 'revisions', collection );
 
-				this.$el.append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] );
-				this.$el.wrapInner('<div class="revview-revision-list" />');
+				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
 
-				// Load most recent revision
-				this.model.set( 'currentInfo', collection.at(0).toJSON() );
+				this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
 				this.model.trigger( 'change:currentRevision' );
 			}
 		},
@@ -475,7 +473,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		placeRevision: function( model ) {
 			this.hideLoading();
-			console.log( 'Revision found', model );
 
 			// Place revision title, content and excerpt if each one exists.
 			_.each( this.current, function( $element, key ){

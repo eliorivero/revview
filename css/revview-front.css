@@ -3,13 +3,22 @@
  */
 #revview {
 	display: block;
-	position: fixed;
-	top: 80px;
+	position: absolute;
+	top: 30px;
 	left: 24%;
 	right: 24%;
+	padding: 15px 2%;
+	width: 52%;
 	background-color: #fff;
-	padding: 20px 2%;
+	box-shadow: 0 3px 20px rgba(0,0,0,.2);
+	font-size: 14px;
+	transition: top .3s ease-out;
 }
+
+#revview.revview-off {
+	top: 0;
+}
+
 .revview-loading:after {
 	display: block;
 	background-color: rgba(255, 255, 255, 0.8);
@@ -67,22 +76,73 @@
 .revview-revision-list .revview-tooltip {
 	position: absolute;
 	background-color: #eee;
-	top: -60px;
+	top: 30px;
 	padding: 5px 10px;
 	text-align: center;
 	font-size: 14px;
 	min-width: 200px;
 	margin-left: -100px;
 }
+.revview-revision-list .revview-tooltip:after {
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-bottom-color: #eee;
+	top: -16px;
+	left: 50%;
+	margin-left: -4px;
+	border-width: 8px;
+}
 .revview-tooltip .revview-tooltip-author {
 	display: block;
 }
 
 .revview-revision-list .revview-info-heading {
-	margin: 10px 0;
-	font-size: 16px;
+	margin: 10px 0 0;
+	font-size: 14px;
+}
+
+.revview-off .ui-slider,
+.revview-off .revview-info,
+.revview-off .revview-stop{
+	display: none;
+}
+
+.revview-button {
+	box-shadow: 0 2px 20px rgba(0,0,0,.2);
+	position: absolute;
+}
+
+.revview-start {
+	font-size: 14px;
+	font-weight: 300;
+	top: 30px;
+	left: 50%;
+	right: 50%;
+	width: 140px;
+	margin-left: -70px;
+	padding: 10px;
+}
+
+.revview-on .revview-start {
+	display: none;
 }
 
 .revview-stop {
-	display: none;
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	height: 30px;
+	width: 30px;
+	padding: 0;
+	font-size: 21px;
+	font-weight: normal;
+}
+
+.revview-on .revview-stop {
+	right: 50%;
+	bottom: -30px;
 }

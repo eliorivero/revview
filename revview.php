@@ -140,16 +140,15 @@ class Revview {
 	public function print_templates() {
 		?>
 		<script id="tmpl-revview-app" type="text/html">
-			<button class="revview-start"><?php esc_html_e( 'View Revisions', 'revview' ) ?></button>
-			<button class="revview-stop"><?php esc_html_e( 'Exit Revisions', 'revview' ) ?></button>
+			<button class="revview-button revview-start"><?php esc_html_e( 'View Revisions', 'revview' ) ?></button>
+			<button class="revview-button revview-stop"><?php esc_html_e( '&times;', 'revview' ) ?></button>
 		</script>
 		<script id="tmpl-revview-tooltip" type="text/html">
 			<span class="revview-tooltip-date">{{ data.display.date }}</span>
 			<span class="revview-tooltip-author"><em><?php esc_html_e( 'By', 'revview' ); ?></em> {{ data.display.author_name }}</span>
 		</script>
 		<script id="tmpl-revview-info" type="text/html">
-			<h4 class="revview-info-heading"><?php esc_html_e( 'Current Revision', 'revview' ) ?></h4>
-			<?php esc_html_e( 'On', 'revview' ); ?> <span class="revview-info-date">{{ data.date }}</span> <?php esc_html_e( 'by', 'revview' ); ?> <span class="revview-info-author">{{ data.author_name }}</span>
+			<h4 class="revview-info-heading"><?php esc_html_e( 'Current Revision', 'revview' ) ?></h4> <span class="revview-info-date">{{ data.date }}</span> <?php esc_html_e( 'by', 'revview' ); ?> <span class="revview-info-author">{{ data.author_name }}</span>
 		</script>
 		<?php
 	}
