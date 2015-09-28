@@ -1,15 +1,19 @@
 /**
  * Revview stylesheet
  */
+
+/* Main wrapper */
 #revview {
 	display: block;
 	position: absolute;
 	top: 30px;
-	left: 24%;
-	right: 24%;
+	left: 7%;
+	right: 7%;
 	padding: 15px 2%;
-	width: 52%;
+	width: 86%;
+	height: 106px;
 	background-color: #fff;
+	background-color: rgba( 255,255,255,.95 );
 	box-shadow: 0 3px 20px rgba(0,0,0,.2);
 	font-size: 14px;
 	transition: top .3s ease-out;
@@ -17,10 +21,13 @@
 
 #revview.revview-off {
 	top: 0;
+	height: 0;
 }
 
+/* Blocking effect when loading revision */
 .revview-loading:after {
 	display: block;
+	background-color: #fff;
 	background-color: rgba(255, 255, 255, 0.8);
 	content: "";
 	width: 100%;
@@ -30,6 +37,8 @@
 	left: 0;
 	z-index: 1;
 }
+
+/* Revision selection bar */
 .revview-revision-list {
 	position: relative;
 }
@@ -55,6 +64,7 @@
 	width: 20px;
 	height: 20px;
 	display: inline-block;
+	background-color: #fb323a;
 	background-color: rgba(251, 0, 0, 0.58);
 	position: absolute;
 	top: 0;
@@ -62,6 +72,11 @@
 	border-radius: 9em;
 	cursor: pointer;
 	z-index: 1;
+}
+
+.revview-revision-list .ui-slider-handle:focus {
+	outline: none;
+	box-shadow: 0 0 3px #fb323a;
 }
 
 .revview-revision-list .revview-tick {
@@ -73,15 +88,18 @@
 	background-color: #ccc;
 }
 
+/* Tooltip */
 .revview-revision-list .revview-tooltip {
 	position: absolute;
-	background-color: #eee;
+	background-color: #333;
+	color: #fff;
 	top: 30px;
 	padding: 5px 10px;
 	text-align: center;
 	font-size: 14px;
 	min-width: 200px;
 	margin-left: -100px;
+	box-shadow: 0 2px 10px rgba(0,0,0,.3);
 }
 .revview-revision-list .revview-tooltip:after {
 	border: solid transparent;
@@ -90,10 +108,10 @@
 	width: 0;
 	position: absolute;
 	pointer-events: none;
-	border-bottom-color: #eee;
+	border-bottom-color: #333;
 	top: -16px;
 	left: 50%;
-	margin-left: -4px;
+	margin-left: -8px;
 	border-width: 8px;
 }
 .revview-tooltip .revview-tooltip-author {
@@ -111,9 +129,23 @@
 	display: none;
 }
 
-.revview-button {
+/* Buttons */
+.revview-button, .revview-button:active {
 	box-shadow: 0 2px 20px rgba(0,0,0,.2);
 	position: absolute;
+	background: #333;
+	color: #fff;
+	border: none;
+	padding: 10px 0;
+	transition: background .2s ease-out;
+}
+
+.revview-button:hover, .revview-button:focus {
+	background: #FF4B4B;
+}
+
+.revview-button:active {
+	background: #FF5F5F;
 }
 
 .revview-start {
@@ -131,7 +163,7 @@
 	display: none;
 }
 
-.revview-stop {
+.revview-stop, .revview-stop:active {
 	position: absolute;
 	right: 0;
 	bottom: 0;
