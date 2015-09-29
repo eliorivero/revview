@@ -457,6 +457,9 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.model.set( 'currentRevision', index );
 			this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[index] );
 			this.model.trigger( 'change:currentRevision' );
+
+			// Focus handle so user can use previous/next keyboard arrows to go through the revisions.
+			this.$el.find( '.ui-slider-handle' ).focus();
 		},
 
 		/**
