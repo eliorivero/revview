@@ -314,7 +314,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		defaults: {
 			currentRevision: 0,
 			currentInfo: {},
-			initialized: false
+			initialized: false,
+			lastRevision: 0
 		}
 	});
 
@@ -403,7 +404,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		startRevisions: function() {
 			this.showUI();
 			if ( this.model.get( 'initialized' ) ) {
-				this.model.trigger( 'change:currentRevision' );
+				this.loadLastRevision( this.model.get( 'lastRevision' ) );
 			} else {
 				this.model.set( 'initialized', true );
 				this.collection.fetch();
@@ -415,9 +416,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		stopRevisions: function() {
 			this.hideUI();
-			_.each( this.current, function( $element, key ) {
-				$element.empty().append( this.original[key] );
-			}, this );
+			this.model.set( 'lastRevision', this.model.get( 'currentRevision' ) );
+			this.loadLastRevision( 0 );
 		},
 
 		/**
@@ -448,9 +448,15 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
 
-				this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
-				this.model.trigger( 'change:currentRevision' );
+				// Same than current content
+				this.loadLastRevision( 0 );
 			}
+		},
+
+		loadLastRevision: function( index ) {
+			this.model.set( 'currentRevision', index );
+			this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[index] );
+			this.model.trigger( 'change:currentRevision' );
 		},
 
 		/**
