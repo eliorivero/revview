@@ -328,7 +328,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		className: 'revview-off', // starts hidden
 
 		current: {},
-		original: {},
 
 		template: wp.template( 'revview-app' ),
 
@@ -340,7 +339,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		initialize: function() {
 			// Get title, content and excerpt in page and save them
 			this.current = this.getAvailableElements();
-			this.original = this.saveOriginalHTML();
 
 			// Revision tooltip
 			this.revisionTooltip = new revview.RevisionTooltipView({
@@ -382,19 +380,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					elements[element] = $element;
 				}
 			} );
-			return elements;
-		},
-
-		/**
-		 * Keep a copy of original HTML in title, content and excerpt to be restored.
-		 *
-		 * @returns { Object }
-		 */
-		saveOriginalHTML: function() {
-			var elements = {};
-			_.each( this.current, function( $element, key ) {
-				elements[key] = $element.html();
-			}, this );
 			return elements;
 		},
 
