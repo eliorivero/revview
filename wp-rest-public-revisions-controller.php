@@ -223,7 +223,8 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			return new WP_Error( 'rest_post_invalid_parent_id', __( 'Invalid post parent ID.' ), array( 'status' => 404 ) );
 		}
 
-		$revision = wp_get_post_revision( $request['revision_id'] );
+		$revision_id = $request['revision_id'];
+		$revision = wp_get_post_revision( $revision_id );
 		if ( is_null( $revision ) ) {
 			return new WP_Error( 'rest_post_invalid_revision_id', __( 'Invalid post revision ID.' ), array( 'status' => 404 ) );
 		}
