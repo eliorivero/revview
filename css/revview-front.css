@@ -167,16 +167,12 @@
 
 .revview-stop, .revview-stop:active {
 	position: absolute;
-	right: 0;
-	bottom: 0;
+	bottom: -30px;
+	right: 50%;
 	height: 30px;
 	width: 30px;
+	margin-right: -15px;
 	padding: 0;
 	font-size: 21px;
 	font-weight: normal;
-}
-
-.revview-on .revview-stop {
-	right: 50%;
-	bottom: -30px;
 }
