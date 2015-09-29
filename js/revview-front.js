@@ -257,6 +257,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.app.model.set( 'currentInfo', this.selectorRevisions[index] );
 		},
 
+		/**
+		 * User stopped dragging the slider handle or clicked on the selection bar.
+		 *
+		 * @param { object } e
+		 * @param where
+		 */
 		stop: function( e, where ) {
 			this.selectRevision( where.value );
 		},
