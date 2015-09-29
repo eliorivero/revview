@@ -119,11 +119,28 @@
 .revview-tooltip .revview-tooltip-author {
 	display: block;
 }
-
+.revview-revision-list .revview-info {
+	margin: 5px 0;
+}
 .revview-revision-list .revview-info-heading {
-	margin: 10px 0 0;
+	margin: 0;
 	font-size: 14px;
 }
+.revview-revision-list .revview-tooltip-left {
+	margin-left: -10px;
+}
+.revview-revision-list .revview-tooltip-left:after {
+	left: 0;
+	margin-left: 4px;
+}
+.revview-revision-list .revview-tooltip-right {
+	margin-left: -190px;
+}
+.revview-revision-list .revview-tooltip-right:after {
+	left: 100%;
+	margin-left: -20px;
+}
+
 
 .revview-off .ui-slider,
 .revview-off .revview-info,

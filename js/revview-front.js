@@ -164,6 +164,11 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		template: wp.template( 'revview-tooltip' ),
 
+		selectionBar: {
+			width: 0,
+			leftOffset: 0
+		},
+
 		initialize: function() {
 			this.listenTo( this.model, 'change:display', this.render );
 			this.listenTo( this.model, 'change:mouseX', this.updatePosition );
@@ -172,7 +177,32 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		updatePosition: function() {
-			this.$el.css( 'left', this.model.get( 'mouseX' ) + 'px' );
+			var tooltipX = this.model.get( 'mouseX' ),
+				tooltipWidth = this.$el.outerWidth(),
+				tooltipDetect = tooltipX,
+				selectionBar = this.selectionBar,
+				detectLeft = selectionBar.leftOffset + ( tooltipWidth / 4 ),
+				detectRight = selectionBar.leftOffset + selectionBar.width - ( tooltipWidth / 2 );
+
+			// Left edge
+			if ( detectLeft >= tooltipDetect ) {
+				if ( ! this.$el.hasClass( 'revview-tooltip-left' ) ) {
+					this.$el.addClass( 'revview-tooltip-left' ).removeClass( 'revview-tooltip-right' );
+				}
+			} else {
+				this.$el.removeClass( 'revview-tooltip-left' );
+			}
+
+			// Right edge
+			if ( detectRight <= tooltipDetect ) {
+				if ( ! this.$el.hasClass( 'revview-tooltip-right' ) ) {
+					this.$el.addClass( 'revview-tooltip-right' ).removeClass( 'revview-tooltip-left' );
+				}
+			} else {
+				this.$el.removeClass( 'revview-tooltip-right' );
+			}
+
+			this.$el.css( 'left', tooltipX + 'px' );
 		},
 
 		updateVisibility: function() {
@@ -215,9 +245,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.tooltip = args.tooltip;
 			this.app = args.app;
 
-			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter' );
+			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter', 'refreshBarOffset' );
 
 			this.refreshTooltip = _.throttle( this.refreshTooltip, 300 );
+
+			// Update selection bar offset
+			this.refreshBarOffset = _.debounce( this.refreshBarOffset, 300 );
+			$(window).on( 'resize', this.refreshBarOffset );
 		},
 
 		/**
@@ -243,6 +277,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			for ( var i = 0; i <= max; i++ ) {
 				$( '<span class="revview-tick"></span>' ).css( 'left', ( spacing * i ) +  '%' ).appendTo( this.$el );
 			}
+
+			this.refreshBarOffset();
 
 			return this;
 		},
@@ -292,8 +328,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		offset: function( $obj ) {
-			var offset = $obj.offset() || {top: 0, left: 0}, win = $(window);
-			return win.width()  - offset.left - $obj.outerWidth();
+			var offset = $obj.offset();
+			return $(window).width()  - offset.left - $obj.outerWidth();
 		},
 
 		mouseEnter: function() {
@@ -304,8 +340,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.tooltip.model.set( 'visible', false );
 		},
 
+		/**
+		 * Update mouse position above selection bar in tooltip model.
+		 */
 		refreshTooltip: function() {
 			this.tooltip.model.set( 'display', this.selectorRevisions[this.currentRevisionIndex] );
+		},
+
+		/**
+		 * Update left offset and width of selection bar in tooltip model.
+		 */
+		refreshBarOffset: function() {
+			this.tooltip.selectionBar = {
+				'width': this.$el.outerWidth(),
+				'leftOffset': this.$el.offset().left
+			};
+			this.tooltip.model.trigger( 'change:mouseX' );
 		}
 
 	} );
