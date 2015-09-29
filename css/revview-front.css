@@ -84,8 +84,9 @@
 	position: absolute;
 	top: 8px;
 	display: block;
-	width: 2px;
 	height: 5px;
+	width: 2px;
+	margin-left: -1px;
 	background-color: #ccc;
 }
 
