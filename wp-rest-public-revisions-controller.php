@@ -373,7 +373,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 				$loaded_js_templates = explode( ',', $request->get_header('x_wp_revview_js_templates') );
 				$dom = new DOMDocument();
 				// Wrap in tags to be the XML root and avoid message "Extra content at the end of the document"
-				if ( $dom->loadXML( '<templates>' . join( "\n", $script_tags[0] ) . '</templates>' ) ) {
+				if ( @$dom->loadXML( '<templates>' . join( "\n", $script_tags[0] ) . '</templates>' ) ) {
 					foreach ( $dom->getElementsByTagName( 'script' ) as $script_tag ) {
 						$script_id = $script_tag->attributes->getNamedItem( 'id' )->value;
 						// If script id is not among those JS templates already loaded...
