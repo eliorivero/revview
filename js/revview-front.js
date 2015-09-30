@@ -247,10 +247,10 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter', 'refreshBarOffset' );
 
-			this.refreshTooltip = _.throttle( this.refreshTooltip, 300 );
+			this.refreshTooltip = _.throttle( this.refreshTooltip, 150 );
 
 			// Update selection bar offset
-			this.refreshBarOffset = _.debounce( this.refreshBarOffset, 300 );
+			this.refreshBarOffset = _.debounce( this.refreshBarOffset, 150 );
 			$(window).on( 'resize', this.refreshBarOffset );
 		},
 
