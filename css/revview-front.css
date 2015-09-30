@@ -6,10 +6,10 @@
 #revview {
 	display: block;
 	position: absolute;
-	top: 30px;
+	top: 0;
 	left: 0;
 	right: 0;
-	padding: 15px 2%;
+	padding: 0 2%;
 	width: 100%;
 	height: 100px;
 	box-sizing: border-box;
@@ -42,6 +42,7 @@
 /* Revision selection bar */
 .revview-revision-list {
 	position: relative;
+	padding: 15px 0;
 }
 
 .revview-revision-list .ui-slider {
@@ -95,7 +96,7 @@
 	position: absolute;
 	background-color: #333;
 	color: #fff;
-	top: 25px;
+	top: 35px;
 	padding: 5px;
 	text-align: center;
 	font-size: 12px;
@@ -128,6 +129,7 @@
 }
 .revview-revision-list .revview-tooltip-left {
 	margin-left: -10px;
+	transition: margin .2s ease-out;
 }
 .revview-revision-list .revview-tooltip-left:after {
 	left: 0;
@@ -135,12 +137,12 @@
 }
 .revview-revision-list .revview-tooltip-right {
 	margin-left: -190px;
+	transition: margin .2s ease-out;
 }
 .revview-revision-list .revview-tooltip-right:after {
 	left: 100%;
 	margin-left: -20px;
 }
-
 
 .revview-off .ui-slider,
 .revview-off .revview-info,
@@ -170,7 +172,7 @@
 .revview-start {
 	font-size: 14px;
 	font-weight: 300;
-	top: 30px;
+	top: 0;
 	left: 50%;
 	right: 50%;
 	width: 140px;
@@ -192,4 +194,9 @@
 	padding: 0;
 	font-size: 21px;
 	font-weight: normal;
+}
+
+/* Tweaks when admin bar is visible */
+.admin-bar #revview {
+	top: 32px;
 }
