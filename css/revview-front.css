@@ -196,6 +196,11 @@
 	font-weight: normal;
 }
 
+/* Revision stage */
+#revview-render {
+	display: none;
+}
+
 /* Tweaks when admin bar is visible */
 .admin-bar #revview {
 	top: 32px;

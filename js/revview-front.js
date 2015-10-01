@@ -377,19 +377,20 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		className: 'revview-off', // starts hidden
 
-		current: {},
+		current: {},  // title, excerpt and content in iframe
+		original: {}, // title, excerpt and content in top
 
 		template: wp.template( 'revview-app' ),
 
+		$iframe: null,
+
 		events: {
 			'click .revview-start': 'startRevisions',
-			'click .revview-stop': 'stopRevisions'
+			'click .revview-stop' : 'stopRevisions',
+			'update'              : 'renderAreaLoaded'
 		},
 
 		initialize: function() {
-			// Get title, content and excerpt in page and save them
-			this.current = this.getAvailableElements();
-
 			// Revision tooltip
 			this.revisionTooltip = new revview.RevisionTooltipView({
 				model: RevisionTooltip
@@ -408,29 +409,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			});
 
 			this.listenTo( this.collection, 'request', this.showLoading );
-			this.listenTo( this.collection, 'sync', this.hideLoading );
+			this.listenTo( this.revisionInfo.model, 'change', this.hideLoading );
 			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
-			this.listenToOnce( this.collection, 'sync', this.firstSync );
 			this.listenTo( this.collection, 'change', this.placeRevision );
+			this.listenToOnce( this.collection, 'sync', this.firstSync );
 
 			// Add revision UI to page
 			$( 'body' ).append( this.render().$el );
-		},
 
-		/**
-		 * Return available title, content and excerpt as jQuery objects.
-		 *
-		 * @returns { Object }
-		 */
-		getAvailableElements: function() {
-			var elements = {};
-			_.each( ['title', 'content', 'excerpt'], function ( element ) {
-				var $element = $( '.revview-' + element ).eq( 0 ).parent();
-				if ( $element.length > 0 ) {
-					elements[element] = $element;
-				}
-			} );
-			return elements;
+			// Save title, content and excerpt in page
+			this.original = this.getOriginalElements();
+
+			// Save reference to iframe
+			this.$iframe = this.$el.find( '#revview-render' );
+
+			// Bind function for iframe initial load
+			this.$iframe.one( 'load', _.bind( this.renderAreaInit, this ) );
 		},
 
 		/**
@@ -441,7 +435,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			if ( this.model.get( 'initialized' ) ) {
 				this.loadLastRevision( this.model.get( 'lastRevision' ) );
 			} else {
-				this.model.set( 'initialized', true );
 				this.collection.fetch();
 			}
 		},
@@ -456,36 +449,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
-		 * Shows UI for revision selection. Hides start button, shows stop button.
-		 */
-		showUI: function() {
-			this.$el.removeClass( 'revview-off' );
-			this.$el.addClass( 'revview-on' );
-		},
-
-		/**
-		 * Hides UI for revision selection. Hides stop button, shows start button.
-		 */
-		hideUI: function() {
-			this.$el.removeClass( 'revview-on' );
-			this.$el.addClass( 'revview-off' );
-		},
-
-		/**
-		 * Initializes UI preparing revision selector list with author name and date, adds UI to page and loads the latest revision saved.
+		 * Render revision selector.
 		 *
-		 * @param { Object } collection
+		 * @returns {revview.RevisionApp}
 		 */
-		firstSync: function( collection ) {
-			if ( collection.length > 0 ) {
-				// Load collection with only author name and date
-				this.revisionSelector.model.set( 'revisions', collection );
-
-				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
-
-				// Same than current content
-				this.loadLastRevision( 0 );
-			}
+		render: function() {
+			this.$el.append( this.template() );
+			return this;
 		},
 
 		loadLastRevision: function( index ) {
@@ -506,13 +476,71 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
-		 * Render revision selector.
-		 *
-		 * @returns {revview.RevisionApp}
+		 * Revision UI has been initialized and iframe loaded.
+		 * Save reference to iframe elements.
+		 * Display last revision information.
+		 * Flag app as initialized.
 		 */
-		render: function() {
-			this.$el.append( this.template() );
-			return this;
+		renderAreaInit: function() {
+			// Get title, content and excerpt in page and save them
+			this.current = this.getAvailableElements();
+
+			// Last revision is the same than current content so don't load it, only update info displayed.
+			this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
+			this.model.trigger( 'change:currentRevision' );
+
+			// App is now initialized
+			this.model.set( 'initialized', true );
+		},
+
+		/**
+		 * Revision UI has been initialized and iframe loaded. Load last revision.
+		 */
+		renderAreaLoaded: function() {
+			// Place revision title, content and excerpt if each one exists.
+			_.each( this.original, function ( $element, key ) {
+				$element.empty().append( this.current[key].html() );
+			}, this );
+		},
+
+		/**
+		 * Triggers iframe's window onload event, so scripts in it can listen to it, and tells the app to update.
+		 */
+		renderAreaOnLoad: function() {
+			this.$iframe.get(0).contentWindow.revviewIframeWindowLoad();
+			this.$el.trigger( 'update' );
+		},
+
+		/**
+		 * Return available title, content and excerpt IN IFRAME as jQuery objects.
+		 *
+		 * @returns { Object }
+		 */
+		getAvailableElements: function() {
+			var elements = {};
+			_.each( ['title', 'content', 'excerpt'], function ( element ) {
+				var $element = this.$iframe.contents().find( '.revview-' + element ).eq( 0 ).parent();
+				if ( $element.length > 0 ) {
+					elements[element] = $element;
+				}
+			}, this );
+			return elements;
+		},
+
+		/**
+		 * Return available title, content and excerpt IN MAIN PAGE as jQuery objects.
+		 *
+		 * @returns { Object }
+		 */
+		getOriginalElements: function() {
+			var elements = {};
+			_.each( ['title', 'content', 'excerpt'], function ( element ) {
+				var $element = $( '.revview-' + element ).eq( 0 ).parent();
+				if ( $element.length > 0 ) {
+					elements[element] = $element;
+				}
+			} );
+			return elements;
 		},
 
 		/**
@@ -524,16 +552,36 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		placeRevision: function( model ) {
 			this.hideLoading();
 
-			// Place revision title, content and excerpt if each one exists.
+			// Place revision title, content and excerpt IN IFRAME if each one exists.
 			_.each( this.current, function( $element, key ){
 				$element.empty().append( this.getHTML( model, key ) );
 			}, this );
 
+			// Add JS templates to iframe
 			this.addTemplates( model.get( 'js_templates' ) );
+
+			// Load styles and scripts
 			this.loadAssets( model.get( 'assets' ) );
 
 			// Update revision information display
 			this.refreshInfo( this.model.get( 'currentInfo' ) );
+		},
+
+		/**
+		 * Initializes UI preparing revision selector list with author name and date, adds UI to page and loads the latest revision saved.
+		 *
+		 * @param { Object } collection
+		 */
+		firstSync: function( collection ) {
+			if ( collection.length > 0 ) {
+				// Load collection with only author name and date
+				this.revisionSelector.model.set( 'revisions', collection );
+
+				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
+
+				// Add current page to iframe with ?revview=render
+				this.$iframe.attr( 'src', revview.permalink );
+			}
 		},
 
 		/**
@@ -543,7 +591,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			// If additional JS templates are required by the revision, add them
 			if ( ! _.isEmpty( js_templates ) ) {
 				revview.js_templates = revview.js_templates.concat( _.pluck( js_templates, 'id' ) );
-				$( 'body' ).append( $( _.pluck( js_templates, 'content' ).join( '\n' ) ) );
+				this.$iframe.contents().find( 'body' ).append( $( _.pluck( js_templates, 'content' ).join( '\n' ) ) );
 			}
 		},
 
@@ -551,60 +599,73 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Parses information returned for styles and scripts.
 		 */
 		loadAssets: function( response ) {
+			var isIE = ( -1 != navigator.userAgent.search( 'MSIE' ) );
+			if ( isIE ) {
+				var IEVersion = navigator.userAgent.match(/MSIE\s?(\d+)\.?\d*;/);
+				IEVersion = parseInt( IEVersion[1] );
+			}
 
 			// Check for and parse our response.
-			if ( _.isUndefined( response ) ) {
+			if ( _.isEmpty( response ) || _.isUndefined( response ) ) {
+				this.renderAreaOnLoad();
 				return;
 			}
 
 			// If additional scripts are required by the revision, parse them
 			if ( _.isObject( response.scripts ) ) {
 				// Count scripts that will be loaded
-				var countScripts = response.scripts.length - 1;
-				$( response.scripts ).each( function() {
-					var elementToAppendTo = this.footer ? 'body' : 'head';
+				if ( response.scripts.length > 0 ) {
+					var countScripts = response.scripts.length - 1;
+					_.each( response.scripts, function( required ) {
+						var elementToAppendTo = required.footer ? 'body' : 'head',
+							$iframeAppendTo = this.$iframe.contents().find( elementToAppendTo ).get(0);
 
-					// Add script handle to list of those already parsed
-					revview.scripts.push( this.handle );
+						// Add script handle to list of those already parsed
+						revview.scripts.push( required.handle );
 
-					// Output extra data, if present
-					if ( this.extra_data ) {
-						var data = document.createElement('script'),
-							dataContent = document.createTextNode( "//<![CDATA[ \n" + this.extra_data + "\n//]]>" );
-
-						data.type = 'text/javascript';
-						data.appendChild( dataContent );
-
-						document.getElementsByTagName( elementToAppendTo )[0].appendChild(data);
-					}
-
-					// Build script tag and append to DOM in requested location
-					var script = document.createElement('script');
-					script.type = 'text/javascript';
-					script.src = this.src;
-					script.id = this.handle;
-					script.onload = function(){
-						// When all scripts are loaded, trigger window 'onload' event.
-						if ( 0 === countScripts ) {
-							$( window ).trigger( 'load' );
+						// Output extra data, if present
+						if ( required.extra_data ) {
+							var data = document.createElement('script'),
+								dataContent = document.createTextNode( "//<![CDATA[ \n" + required.extra_data + "\n//]]>" );
+							data.type = 'text/javascript';
+							data.appendChild( dataContent );
+							$iframeAppendTo.appendChild( data );
 						}
-						// If script loaded, there's one less to load.
-						countScripts--;
-					};
-					script.onerror = function() {
-						// If some script failed to load, that's one less to load too.
-						countScripts--;
-					};
 
-					if ( 'wp-mediaelement' === this.handle && 'undefined' === typeof mejs ) {
-						self.wpMediaelement = {};
-						self.wpMediaelement.tag = script;
-						self.wpMediaelement.element = elementToAppendTo;
-						setTimeout( self.maybeLoadMejs.bind( self ), 250 );
-					} else {
-						document.getElementsByTagName( elementToAppendTo )[0].appendChild(script);
-					}
-				} );
+						// Build script tag and append to DOM in requested location
+						var script = document.createElement('script');
+						script.type = 'text/javascript';
+						script.src = required.src;
+						script.id = required.handle;
+						script.onload = _.bind( function() {
+							// When all scripts are loaded, trigger window 'onload' event.
+							if ( 0 === countScripts ) {
+								this.renderAreaOnLoad();
+							}
+							// If script loaded, there's one less to load.
+							countScripts--;
+						}, this );
+						script.onerror = function() {
+							// If some script failed to load, that's one less to load too.
+							countScripts--;
+						};
+
+						if ( 'wp-mediaelement' === required.handle && 'undefined' === typeof mejs ) {
+							this.wpMediaelement = {};
+							this.wpMediaelement.tag = script;
+							this.wpMediaelement.element = elementToAppendTo;
+							setTimeout( this.maybeLoadMejs.bind( this ), 250 );
+						} else {
+							var scriptIsLoaded = this.$iframe.contents().find( 'script[src="' + required.src + '"]' );
+							if ( scriptIsLoaded.length > 0 ) {
+								scriptIsLoaded.remove();
+							}
+							$iframeAppendTo.appendChild( script );
+						}
+					}, this );
+				} else {
+					this.renderAreaOnLoad();
+				}
 			}
 
 			// If additional stylesheets are required by the revision, parse them
@@ -656,6 +717,22 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			if ( !_.isUndefined( currentInfo ) ) {
 				this.revisionInfo.model.set( currentInfo );
 			}
+		},
+
+		/**
+		 * Shows UI for revision selection. Hides start button, shows stop button.
+		 */
+		showUI: function() {
+			this.$el.removeClass( 'revview-off' );
+			this.$el.addClass( 'revview-on' );
+		},
+
+		/**
+		 * Hides UI for revision selection. Hides stop button, shows start button.
+		 */
+		hideUI: function() {
+			this.$el.removeClass( 'revview-on' );
+			this.$el.addClass( 'revview-off' );
 		},
 
 		showLoading: function() {

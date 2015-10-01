@@ -32,8 +32,13 @@ class Revview {
 	 */
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'localization' ) );
-		add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		if ( ! isset( $_GET['revview'] ) ) {
+			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		} else {
+			add_filter( 'show_admin_bar', '__return_false' );
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_iframe_assets' ) );
+		}
 		add_action( 'loop_start', array( $this, 'add_discoverable_elements' ) );
 	}
 
@@ -73,7 +78,6 @@ class Revview {
 	public function register_assets() {
 		if ( is_singular() && $this->is_post_visible_in_rest() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
-			add_action( 'wp_footer', array( $this, 'async_load_assets_loaded' ), 21 );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
@@ -81,10 +85,25 @@ class Revview {
 			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_js_variables', array(
 				'post_id' => get_the_ID(),
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
+				'permalink' => esc_url( add_query_arg( 'revview', 'render', get_permalink( get_the_ID() ) ) ),
 				'styles' => array(),
 				'scripts' => array(),
 				'js_templates' => array(),
 			) ) );
+		}
+	}
+
+	/**
+	 * Register JS and CSS files to load in front end.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function register_iframe_assets() {
+		if ( is_singular() && $this->is_post_visible_in_rest() ) {
+			add_action( 'wp_footer', array( $this, 'async_load_assets_loaded' ), 21 );
+			wp_enqueue_script( 'jquery' );
+			wp_enqueue_script( 'underscore' );
 		}
 	}
 
@@ -107,9 +126,14 @@ class Revview {
 		$styles = apply_filters( 'revview_loaded_styles', $styles );
 		?>
 		<script type="text/javascript">
-			jQuery.extend( revview.scripts, <?php echo json_encode( $scripts ); ?> );
-			jQuery.extend( revview.styles, <?php echo json_encode( $styles ); ?> );
-			jQuery.extend( revview.js_templates, _.map( jQuery( 'script[id^="tmpl-"]' ), function( script ){ return script.id; } ) );
+			jQuery.extend( window.top.revview.scripts, <?php echo json_encode( $scripts ); ?> );
+			jQuery.extend( window.top.revview.styles, <?php echo json_encode( $styles ); ?> );
+			jQuery.extend( window.top.revview.js_templates, _.map( jQuery( 'script[id^="tmpl-"]' ), function ( script ) {
+				return script.id;
+			} ) );
+			function revviewIframeWindowLoad() {
+				jQuery(window).trigger('load');
+			}
 		</script>
 		<?php
 	}
@@ -142,6 +166,7 @@ class Revview {
 		<script id="tmpl-revview-app" type="text/html">
 			<button class="revview-button revview-start"><?php esc_html_e( 'View Revisions', 'revview' ) ?></button>
 			<button class="revview-button revview-stop"><?php esc_html_e( '&times;', 'revview' ) ?></button>
+			<iframe id="revview-render"></iframe>
 		</script>
 		<script id="tmpl-revview-tooltip" type="text/html">
 			<span class="revview-tooltip-date">{{ data.display.date }}</span>

@@ -405,18 +405,9 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	 * @uses     sanitize_text_field, add_query_arg
 	 */
 	function prepare_styles_and_scripts( $results, $request ) {
-
-		// Get scripts already loaded
-		/**
-		 * TODO: some way to know which scripts are loaded but must be re-executed after loading selected revision?
-		 * If the line below is replaced with
-		 * $loaded_scripts = explode( ',', $request->get_header('x_wp_revview_scripts') );
-		 * a script that was loaded and run on page load, won't be loaded and run again when fetching a revision that needs it.
-		 * The following scripts are loaded for the revview UI so they never need to be loaded again.
-		 */
-		$loaded_scripts = array( 'jquery-core', 'jquery-migrate', 'jquery', 'underscore', 'backbone', 'wp-api', 'wp-util', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse', 'jquery-ui-slider' );
-
+		
 		// Parse and sanitize the script handles already output
+		$loaded_scripts = explode( ',', $request->get_header( 'x_wp_revview_scripts' ) );
 		$initial_scripts = is_array( $loaded_scripts ) ? array_map( 'sanitize_text_field', $loaded_scripts ) : false;
 
 		if ( is_array( $initial_scripts ) ) {
