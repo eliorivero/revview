@@ -76,7 +76,7 @@ class Revview {
 	 * @access public
 	 */
 	public function register_assets() {
-		if ( is_singular() && $this->is_post_visible_in_rest() ) {
+		if ( is_singular() && $this->can_view_revisions() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
@@ -100,7 +100,7 @@ class Revview {
 	 * @access public
 	 */
 	public function register_iframe_assets() {
-		if ( is_singular() && $this->is_post_visible_in_rest() ) {
+		if ( is_singular() && $this->can_view_revisions() ) {
 			add_action( 'wp_footer', array( $this, 'async_load_assets_loaded' ), 21 );
 			wp_enqueue_script( 'jquery' );
 			wp_enqueue_script( 'underscore' );
@@ -146,11 +146,16 @@ class Revview {
 	 *
 	 * @return bool
 	 */
-	public function is_post_visible_in_rest() {
+	public function can_view_revisions() {
 		static $is_visible;
 		if ( ! isset( $is_visible ) ) {
-			$post_type = get_post_type_object( get_post_type() );
-			$is_visible = isset( $post_type->show_in_rest ) && $post_type->show_in_rest;
+			$post = get_post();
+			if ( wp_revisions_enabled( $post ) && 1 < count( wp_get_post_revisions() ) ) {
+				$post_type = get_post_type_object( get_post_type( $post ) );
+				$is_visible = isset( $post_type->show_in_rest ) && $post_type->show_in_rest;
+			} else {
+				$is_visible = false;
+			}
 		}
 		return $is_visible;
 	}
