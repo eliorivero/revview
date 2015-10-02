@@ -390,6 +390,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			'update'              : 'renderAreaLoaded'
 		},
 
+		currentModel: {},
+
 		initialize: function() {
 			// Revision tooltip
 			this.revisionTooltip = new revview.RevisionTooltipView({
@@ -413,6 +415,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
 			this.listenTo( this.collection, 'change', this.placeRevision );
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
+
+			_.bindAll( this, 'renderAreaLoaded' );
 
 			// Add revision UI to page
 			$( 'body' ).append( this.render().$el );
@@ -497,7 +501,15 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Revision UI has been initialized and iframe loaded. Load last revision.
 		 */
 		renderAreaLoaded: function() {
-			// Place revision title, content and excerpt if each one exists.
+			// Place revision title, content and excerpt IN IFRAME if each one exists.
+			_.each( this.current, function( $element, key ){
+				$element.empty().append( this.getHTML( this.currentModel, key ) );
+			}, this );
+
+			// Update revision information display
+			this.refreshInfo( this.model.get( 'currentInfo' ) );
+
+			// Place revision title, content and excerpt IN MAIN PAGE if each one exists.
 			_.each( this.original, function ( $element, key ) {
 				$element.empty().append( this.current[key].html() );
 			}, this );
@@ -552,19 +564,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		placeRevision: function( model ) {
 			this.hideLoading();
 
-			// Place revision title, content and excerpt IN IFRAME if each one exists.
-			_.each( this.current, function( $element, key ){
-				$element.empty().append( this.getHTML( model, key ) );
-			}, this );
+			this.currentModel = model;
 
 			// Add JS templates to iframe
 			this.addTemplates( model.get( 'js_templates' ) );
 
 			// Load styles and scripts
 			this.loadAssets( model.get( 'assets' ) );
-
-			// Update revision information display
-			this.refreshInfo( this.model.get( 'currentInfo' ) );
 		},
 
 		/**
