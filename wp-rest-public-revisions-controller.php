@@ -405,7 +405,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	 * @uses     sanitize_text_field, add_query_arg
 	 */
 	function prepare_styles_and_scripts( $results, $request ) {
-		
+
 		// Parse and sanitize the script handles already output
 		$loaded_scripts = explode( ',', $request->get_header( 'x_wp_revview_scripts' ) );
 		$initial_scripts = is_array( $loaded_scripts ) ? array_map( 'sanitize_text_field', $loaded_scripts ) : false;
