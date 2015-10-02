@@ -652,9 +652,15 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 							countScripts--;
 						}, this );
 						script.onerror = function() {
+						script.onerror = _.bind( function() {
+							// When all scripts are loaded even with an error, trigger window 'onload' event.
+							if ( 0 === countScripts ) {
+								this.renderAreaOnLoad();
+							}
+
 							// If some script failed to load, that's one less to load too.
 							countScripts--;
-						};
+						}, this );
 
 						if ( 'wp-mediaelement' === required.handle && 'undefined' === typeof mejs ) {
 							this.wpMediaelement = {};
