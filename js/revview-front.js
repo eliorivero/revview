@@ -651,7 +651,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 							// If script loaded, there's one less to load.
 							countScripts--;
 						}, this );
-						script.onerror = function() {
 						script.onerror = _.bind( function() {
 							// When all scripts are loaded even with an error, trigger window 'onload' event.
 							if ( 0 === countScripts ) {
