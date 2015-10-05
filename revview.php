@@ -109,7 +109,6 @@ class Revview {
 			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_selection_ui_js_variables', array(
 				'post_id' => get_the_ID(),
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
-				'permalink' => esc_url( add_query_arg( 'revview', 'render', get_permalink( get_the_ID() ) ) ),
 				'styles' => array(),
 				'scripts' => array(),
 			) ) );
