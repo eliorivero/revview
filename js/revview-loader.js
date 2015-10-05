@@ -2,7 +2,7 @@
  * Revview - Button to initialize revision selection.
  */
 var revviewLoader;
-(function ( document ) {
+(function ( window ) {
 	'use strict';
 
 	function addQueryArg( key, value, url ) {
@@ -34,10 +34,9 @@ var revviewLoader;
 		}
 	}
 
-	window.onload = function () {
+	window.addEventListener( 'load', function () {
 		var wrapper = document.createElement( 'div' ),
 			start = document.createElement( 'button' );
-
 		wrapper.id = 'revview';
 		start.textContent = revviewLoader.view_revisions;
 		start.className = 'revview-button revview-start';
@@ -46,5 +45,5 @@ var revviewLoader;
 		} );
 		wrapper.appendChild( start );
 		document.body.appendChild( wrapper );
-	};
-})( document );
+	} );
+})( window );

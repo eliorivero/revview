@@ -174,9 +174,11 @@ class Revview {
 	public function revision_loaded_messenger() {
 		?>
 		<script type="text/javascript">
-			window.onload = function() {
-				window.top.postMessage( 'revview-synced', window.document.origin );
-			};
+			(function(window){
+				window.addEventListener( 'load', function() {
+					window.top.postMessage( 'revview-synced', window.document.origin );
+				});
+			})(window);
 		</script>
 		<?php
 	}
