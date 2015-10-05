@@ -16,6 +16,10 @@
 </head>
 
 <body <?php body_class(); ?>>
-<iframe id="revview-render"></iframe>
+
+<div id="revview-stage">
+	<iframe id="revview-render"></iframe>
+</div>
+
 <?php wp_footer(); ?>
 </body>

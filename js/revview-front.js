@@ -382,6 +382,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		$iframe: null,
+		$stage: null,
 		revisionURL: '',
 
 		initialize: function() {
@@ -419,8 +420,10 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			// Add revision UI to page
 			$body.append( this.render().$el );
 
-			// Save reference to iframe
+			// Save reference to stage and iframe
+			this.$stage = $( '#revview-stage' );
 			this.$iframe = document.getElementById( 'revview-render' ).contentWindow.document;
+
 			// Change URL for iframe
 			this.revisionURL = document.location.href.replace( 'revview=enabled', 'revview=render' );
 
@@ -620,10 +623,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		showLoading: function() {
 			this.$el.addClass( 'revview-loading' );
+			this.$stage.addClass( 'revview-loading' );
 		},
 
 		hideLoading: function() {
 			this.$el.removeClass( 'revview-loading' );
+			this.$stage.removeClass( 'revview-loading' );
 		}
 	});
 
