@@ -272,7 +272,10 @@ class Revview {
 	 */
 	function revview_title( $title = '' ) {
 		if ( isset( $_POST['title'] ) ) {
-			return $_POST['title'];
+			$post = get_post();
+			if ( $post instanceof WP_Post ) {
+				return sanitize_post_field( 'post_title', $_POST['title'], $post->ID, 'display' );
+			}
 		}
 		return $title;
 	}
@@ -286,7 +289,10 @@ class Revview {
 	 */
 	function revview_content( $content = '' ) {
 		if ( isset( $_POST['content'] ) ) {
-			return $_POST['content'];
+			$post = get_post();
+			if ( $post instanceof WP_Post ) {
+				return sanitize_post_field( 'post_content', $_POST['content'], $post->ID, 'display' );
+			}
 		}
 		return $content;
 	}
@@ -300,7 +306,10 @@ class Revview {
 	 */
 	function revview_excerpt( $excerpt = '' ) {
 		if ( isset( $_POST['excerpt'] ) ) {
-			return $_POST['excerpt'];
+			$post = get_post();
+			if ( $post instanceof WP_Post ) {
+				return sanitize_post_field( 'post_excerpt', $_POST['excerpt'], $post->ID, 'display' );
+			}
 		}
 		return $excerpt;
 	}
