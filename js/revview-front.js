@@ -378,7 +378,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		events: {
 			'click .revview-stop' : 'stopRevisions',
-			'update'              : 'renderAreaLoaded'
+			'update'              : 'hideLoading'
 		},
 
 		$iframe: null,
@@ -403,7 +403,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			});
 
 			this.listenTo( this.collection, 'request', this.showLoading );
-			this.listenTo( this.revisionInfo.model, 'change', this.hideLoading );
 			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
 			this.listenTo( this.collection, 'change', this.placeRevision );
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
@@ -422,7 +421,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 			// Save reference to iframe
 			this.$iframe = document.getElementById( 'revview-render' ).contentWindow.document;
-
+			// Change URL for iframe
 			this.revisionURL = document.location.href.replace( 'revview=enabled', 'revview=render' );
 
 			this.startRevisions();
@@ -481,6 +480,11 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.requestPage( {} );
 		},
 
+		/**
+		 * Fire page request.
+		 *
+		 * @param { object } model
+		 */
 		requestPage: function( model ) {
 			var query = {
 					type     : 'POST',
@@ -499,15 +503,21 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			);
 		},
 
+		/**
+		 * If request ended up ok, receive page HTML and insert it in iframe.
+		 *
+		 * @param { string } response
+		 */
 		requestPageSuccess: function( response ) {
 			this.$iframe.open();
 			this.$iframe.write( response );
 			this.$iframe.close();
-			this.hideLoading();
 		},
 
 		/**
 		 * Receives iframe's window onload event and tells the app to update.
+		 *
+		 * @param { object } e
 		 */
 		renderAreaLoaded: function( e ) {
 			if ( e.origin == document.origin ) {
