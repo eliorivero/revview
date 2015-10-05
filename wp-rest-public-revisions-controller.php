@@ -287,9 +287,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! empty( $schema['properties']['excerpt'] ) ) {
-			$data['excerpt'] = array(
-				'rendered' 	=> $this->prepare_excerpt_response( $post->post_excerpt ),
-			);
+			$data['excerpt'] = $this->prepare_excerpt_response( $post->post_excerpt );
 		}
 
 		$is_single_revision = $request->get_param( 'revision_id' );
@@ -624,7 +622,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			return __( 'There is no excerpt because this is a protected post.' );
 		}
 
-		$excerpt = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $excerpt ) );
+		$excerpt = apply_filters( 'get_the_excerpt', $excerpt );
 
 		if ( empty( $excerpt ) ) {
 			return '';
