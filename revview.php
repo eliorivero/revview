@@ -220,7 +220,7 @@ class Revview {
 		static $is_visible;
 		if ( ! isset( $is_visible ) ) {
 			$post = get_post();
-			if ( wp_revisions_enabled( $post ) && 1 < count( wp_get_post_revisions() ) ) {
+			if ( $post instanceof WP_Post && wp_revisions_enabled( $post ) && 1 < count( wp_get_post_revisions() ) ) {
 				$post_type = get_post_type_object( get_post_type( $post ) );
 				$is_visible = isset( $post_type->show_in_rest ) && $post_type->show_in_rest;
 			} else {
