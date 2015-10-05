@@ -1,5 +1,5 @@
 /**
- * Revview Interface
+ * Revview - Revision Selection Timeline
  */
 
 var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
@@ -32,7 +32,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 						xhr.setRequestHeader( 'X-WP-Revview-Styles', revview.styles );
 						xhr.setRequestHeader( 'X-WP-Revview-Scripts', revview.scripts );
-						xhr.setRequestHeader( 'X-WP-Revview-JS-Templates', revview.js_templates );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
@@ -363,9 +362,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	revview.RevisionAppModel = Backbone.Model.extend({
 		defaults: {
 			currentRevision: 0,
-			currentInfo: {},
-			initialized: false,
-			lastRevision: 0
+			currentInfo: {}
 		}
 	});
 
@@ -377,20 +374,15 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 		className: 'revview-off', // starts hidden
 
-		current: {},  // title, excerpt and content in iframe
-		original: {}, // title, excerpt and content in top
-
 		template: wp.template( 'revview-app' ),
 
-		$iframe: null,
-
 		events: {
-			'click .revview-start': 'startRevisions',
 			'click .revview-stop' : 'stopRevisions',
 			'update'              : 'renderAreaLoaded'
 		},
 
-		currentModel: {},
+		$iframe: null,
+		revisionURL: '',
 
 		initialize: function() {
 			// Revision tooltip
@@ -416,19 +408,24 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.listenTo( this.collection, 'change', this.placeRevision );
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
 
-			_.bindAll( this, 'renderAreaLoaded' );
+			_.bindAll( this, 'renderAreaLoaded', 'requestPage', 'requestPageSuccess' );
+
+			window.addEventListener( 'message', this.renderAreaLoaded, false) ;
+
+			var $body = $( 'body' );
+
+			// Clean all classes from html tag since they're not needed and add ours
+			$('html' ).removeClass().addClass( 'revview-ui' );
 
 			// Add revision UI to page
-			$( 'body' ).append( this.render().$el );
-
-			// Save title, content and excerpt in page
-			this.original = this.getOriginalElements();
+			$body.append( this.render().$el );
 
 			// Save reference to iframe
-			this.$iframe = this.$el.find( '#revview-render' );
+			this.$iframe = document.getElementById( 'revview-render' ).contentWindow.document;
 
-			// Bind function for iframe initial load
-			this.$iframe.one( 'load', _.bind( this.renderAreaInit, this ) );
+			this.revisionURL = document.location.href.replace( 'revview=enabled', 'revview=render' );
+
+			this.startRevisions();
 		},
 
 		/**
@@ -436,11 +433,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		startRevisions: function() {
 			this.showUI();
-			if ( this.model.get( 'initialized' ) ) {
-				this.loadLastRevision( this.model.get( 'lastRevision' ) );
-			} else {
-				this.collection.fetch();
-			}
+			this.renderAreaInit();
+			this.collection.fetch();
 		},
 
 		/**
@@ -448,8 +442,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		stopRevisions: function() {
 			this.hideUI();
-			this.model.set( 'lastRevision', this.model.get( 'currentRevision' ) );
-			this.loadLastRevision( 0 );
+			history.back();
 		},
 
 		/**
@@ -483,94 +476,61 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Revision UI has been initialized and iframe loaded.
 		 * Save reference to iframe elements.
 		 * Display last revision information.
-		 * Flag app as initialized.
 		 */
 		renderAreaInit: function() {
-			// Get title, content and excerpt in page and save them
-			this.current = this.getAvailableElements();
+			this.requestPage( {} );
+		},
 
-			// Last revision is the same than current content so don't load it, only update info displayed.
-			this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
-			this.model.trigger( 'change:currentRevision' );
+		requestPage: function( model ) {
+			var query = {
+					type     : 'POST',
+					xhrFields: {
+						withCredentials: true
+					},
+					success: this.requestPageSuccess
+				};
+			if ( ! _.isEmpty( model ) ) {
+				query.data = _.pick( model.toJSON(), 'title', 'content', 'excerpt' )
+			}
 
-			// App is now initialized
-			this.model.set( 'initialized', true );
+			$.ajax(
+				this.revisionURL,
+				query
+			);
+		},
+
+		requestPageSuccess: function( response ) {
+			this.$iframe.open();
+			this.$iframe.write( response );
+			this.$iframe.close();
+			this.hideLoading();
 		},
 
 		/**
-		 * Revision UI has been initialized and iframe loaded. Load last revision.
+		 * Receives iframe's window onload event and tells the app to update.
 		 */
-		renderAreaLoaded: function() {
-			// Place revision title, content and excerpt IN IFRAME if each one exists.
-			_.each( this.current, function( $element, key ){
-				$element.empty().append( this.getHTML( this.currentModel, key ) );
-			}, this );
-
-			// Update revision information display
-			this.refreshInfo( this.model.get( 'currentInfo' ) );
-
-			// Place revision title, content and excerpt IN MAIN PAGE if each one exists.
-			_.each( this.original, function ( $element, key ) {
-				$element.empty().append( this.current[key].html() );
-			}, this );
-		},
-
-		/**
-		 * Triggers iframe's window onload event, so scripts in it can listen to it, and tells the app to update.
-		 */
-		renderAreaOnLoad: function() {
-			this.$iframe.get(0).contentWindow.revviewIframeWindowLoad();
-			this.$el.trigger( 'update' );
-		},
-
-		/**
-		 * Return available title, content and excerpt IN IFRAME as jQuery objects.
-		 *
-		 * @returns { Object }
-		 */
-		getAvailableElements: function() {
-			var elements = {};
-			_.each( ['title', 'content', 'excerpt'], function ( element ) {
-				var $element = this.$iframe.contents().find( '.revview-' + element ).eq( 0 ).parent();
-				if ( $element.length > 0 ) {
-					elements[element] = $element;
+		renderAreaLoaded: function( e ) {
+			if ( e.origin == document.origin ) {
+				if ( e.data == 'revview-synced' ) {
+					this.$el.trigger( 'update' );
 				}
-			}, this );
-			return elements;
+			}
 		},
 
 		/**
-		 * Return available title, content and excerpt IN MAIN PAGE as jQuery objects.
-		 *
-		 * @returns { Object }
-		 */
-		getOriginalElements: function() {
-			var elements = {};
-			_.each( ['title', 'content', 'excerpt'], function ( element ) {
-				var $element = $( '.revview-' + element ).eq( 0 ).parent();
-				if ( $element.length > 0 ) {
-					elements[element] = $element;
-				}
-			} );
-			return elements;
-		},
-
-		/**
-		 * Replace current title, content and excerpt with those in selected revision.
+		 * Load selected revision.
 		 * Updates displayed revision information.
 		 *
 		 * @param { Object } model
 		 */
 		placeRevision: function( model ) {
-			this.hideLoading();
+			this.requestPage( model );
 
-			this.currentModel = model;
-
-			// Add JS templates to iframe
-			this.addTemplates( model.get( 'js_templates' ) );
+			// Update revision information display
+			this.refreshInfo( this.model.get( 'currentInfo' ) );
 
 			// Load styles and scripts
-			this.loadAssets( model.get( 'assets' ) );
+			this.listAssets( model.get( 'assets' ) );
 		},
 
 		/**
@@ -583,100 +543,44 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				// Load collection with only author name and date
 				this.revisionSelector.model.set( 'revisions', collection );
 
+				// Add UI elements
 				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
 
-				// Add current page to iframe with ?revview=render
-				this.$iframe.attr( 'src', revview.permalink );
+				// Same than current content
+				this.loadLastRevision( 0 );
+			}
+		},
+
+		/**
+		 * Set current revision information to be displayed.
+		 *
+		 * @param { object } currentInfo
+		 */
+		refreshInfo: function( currentInfo ) {
+			if ( !_.isUndefined( currentInfo ) ) {
+				this.revisionInfo.model.set( currentInfo );
 			}
 		},
 
 		/**
 		 * Parses information returned for styles and scripts.
+		 *
+		 * @param { object } response
 		 */
-		addTemplates: function( js_templates ) {
-			// If additional JS templates are required by the revision, add them
-			if ( ! _.isEmpty( js_templates ) ) {
-				revview.js_templates = revview.js_templates.concat( _.pluck( js_templates, 'id' ) );
-				this.$iframe.contents().find( 'body' ).append( $( _.pluck( js_templates, 'content' ).join( '\n' ) ) );
-			}
-		},
-
-		/**
-		 * Parses information returned for styles and scripts.
-		 */
-		loadAssets: function( response ) {
-			var isIE = ( -1 != navigator.userAgent.search( 'MSIE' ) );
-			if ( isIE ) {
-				var IEVersion = navigator.userAgent.match(/MSIE\s?(\d+)\.?\d*;/);
-				IEVersion = parseInt( IEVersion[1] );
-			}
+		listAssets: function( response ) {
 
 			// Check for and parse our response.
 			if ( _.isEmpty( response ) || _.isUndefined( response ) ) {
-				this.renderAreaOnLoad();
 				return;
 			}
 
 			// If additional scripts are required by the revision, parse them
 			if ( _.isObject( response.scripts ) ) {
 				// Count scripts that will be loaded
-				if ( response.scripts.length > 0 ) {
-					var countScripts = response.scripts.length - 1;
-					_.each( response.scripts, function( required ) {
-						var elementToAppendTo = required.footer ? 'body' : 'head',
-							$iframeAppendTo = this.$iframe.contents().find( elementToAppendTo ).get(0);
-
-						// Add script handle to list of those already parsed
-						revview.scripts.push( required.handle );
-
-						// Output extra data, if present
-						if ( required.extra_data ) {
-							var data = document.createElement('script'),
-								dataContent = document.createTextNode( "//<![CDATA[ \n" + required.extra_data + "\n//]]>" );
-							data.type = 'text/javascript';
-							data.appendChild( dataContent );
-							$iframeAppendTo.appendChild( data );
-						}
-
-						// Build script tag and append to DOM in requested location
-						var script = document.createElement('script');
-						script.type = 'text/javascript';
-						script.src = required.src;
-						script.id = required.handle;
-						script.onload = _.bind( function() {
-							// When all scripts are loaded, trigger window 'onload' event.
-							if ( 0 === countScripts ) {
-								this.renderAreaOnLoad();
-							}
-							// If script loaded, there's one less to load.
-							countScripts--;
-						}, this );
-						script.onerror = _.bind( function() {
-							// When all scripts are loaded even with an error, trigger window 'onload' event.
-							if ( 0 === countScripts ) {
-								this.renderAreaOnLoad();
-							}
-
-							// If some script failed to load, that's one less to load too.
-							countScripts--;
-						}, this );
-
-						if ( 'wp-mediaelement' === required.handle && 'undefined' === typeof mejs ) {
-							this.wpMediaelement = {};
-							this.wpMediaelement.tag = script;
-							this.wpMediaelement.element = elementToAppendTo;
-							setTimeout( this.maybeLoadMejs.bind( this ), 250 );
-						} else {
-							var scriptIsLoaded = this.$iframe.contents().find( 'script[src="' + required.src + '"]' );
-							if ( scriptIsLoaded.length > 0 ) {
-								scriptIsLoaded.remove();
-							}
-							$iframeAppendTo.appendChild( script );
-						}
-					}, this );
-				} else {
-					this.renderAreaOnLoad();
-				}
+				_.each( response.scripts, function( required ) {
+					// Add script handle to list of those already parsed
+					revview.scripts.push( required.handle );
+				}, this );
 			}
 
 			// If additional stylesheets are required by the revision, parse them
@@ -684,49 +588,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				$( response.styles ).each( function() {
 					// Add stylesheet handle to list of those already parsed
 					revview.styles.push( this.handle );
-
-					// Build link tag
-					var style = document.createElement('link');
-					style.rel = 'stylesheet';
-					style.href = this.src;
-					style.id = this.handle + '-css';
-
-					// Destroy link tag if a conditional statement is present and either the browser isn't IE, or the conditional doesn't evaluate true
-					if ( this.conditional && ( ! isIE || ! eval( this.conditional.replace( /%ver/g, IEVersion ) ) ) ) {
-						style = false;
-					}
-
-					// Append link tag if necessary
-					if ( style ) {
-						document.getElementsByTagName('head')[0].appendChild(style);
-					}
 				} );
-			}
-		},
-
-		/**
-		 * Check if title, content or excerpt are available in the model, even if they're empty,
-		 * and return them as HTML for insertion.
-		 *
-		 * @param { Object } model
-		 * @param { string } field
-		 * @returns { String } Markup to insert.
-		 */
-		getHTML: function( model, field ) {
-			var properties = model.toJSON(),
-				rendered = '';
-			if ( properties.hasOwnProperty( field ) ) {
-				var property = properties[field];
-				if ( ! _.isUndefined( property.rendered ) ) {
-					rendered = property.rendered;
-				}
-			}
-			return $( '<div>' + rendered + '</div>' ).html();
-		},
-
-		refreshInfo: function( currentInfo ) {
-			if ( !_.isUndefined( currentInfo ) ) {
-				this.revisionInfo.model.set( currentInfo );
 			}
 		},
 

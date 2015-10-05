@@ -26,6 +26,24 @@
 	height: 0;
 }
 
+/* Revision stage */
+.revview-ui {
+	height: 100%;
+}
+html.revview-ui {
+	overflow: hidden;
+}
+body.revview-ui {
+	padding-top: 100px;
+}
+#revview-render {
+	width: 100%;
+	min-height: 100%;
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
 /* Blocking effect when loading revision */
 .revview-loading:after {
 	display: block;
@@ -171,21 +189,6 @@
 	background: #FF5F5F;
 }
 
-.revview-start {
-	font-size: 12px;
-	font-weight: 300;
-	top: 0;
-	left: 50%;
-	right: 50%;
-	width: 140px;
-	margin-left: -70px;
-	padding: 10px;
-}
-
-.revview-on .revview-start {
-	display: none;
-}
-
 .revview-stop, .revview-stop:active {
 	position: absolute;
 	bottom: -30px;
@@ -198,12 +201,15 @@
 	font-weight: normal;
 }
 
-/* Revision stage */
-#revview-render {
-	display: none;
-}
-
 /* Tweaks when admin bar is visible */
 .admin-bar #revview {
 	top: 32px;
+}
+.admin-bar.revview-ui {
+	padding-bottom: 32px;
+}
+
+/* Theme Support */
+body.twentyfifteen:before {
+	content: initial !important;
 }

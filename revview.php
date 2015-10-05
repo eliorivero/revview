@@ -32,12 +32,18 @@ class Revview {
 	 */
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'localization' ) );
-		if ( ! isset( $_GET['revview'] ) ) {
-			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		if ( isset( $_GET['revview'] ) ) {
+			if ( 'render' === $_GET['revview'] ) {
+				add_filter( 'show_admin_bar', '__return_false' );
+				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
+			} else {
+				add_action( 'wp_enqueue_scripts', array( $this, 'register_selection_ui_assets' ) );
+				add_filter( 'single_template', array( $this, 'replace_singular_template' ) );
+				add_filter( 'body_class', array( $this, 'body_class' ) );
+			}
 		} else {
-			add_filter( 'show_admin_bar', '__return_false' );
-			add_action( 'wp_enqueue_scripts', array( $this, 'register_iframe_assets' ) );
+			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_loader_assets' ) );
 		}
 		add_action( 'loop_start', array( $this, 'add_discoverable_elements' ) );
 	}
@@ -60,6 +66,22 @@ class Revview {
 	}
 
 	/**
+	 * Register JS and CSS files to load in front end.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function register_loader_assets() {
+		if ( is_singular() && $this->can_view_revisions() ) {
+			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ) );
+			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
+				'view_revisions' => esc_html__( 'View Revisions', 'revview' ),
+			) ) );
+		}
+	}
+
+	/**
 	 * Initialize localization routines
 	 *
 	 * @since 1.0.0
@@ -75,36 +97,88 @@ class Revview {
 	 * @since 1.0.0
 	 * @access public
 	 */
-	public function register_assets() {
+	public function register_selection_ui_assets() {
 		if ( is_singular() && $this->can_view_revisions() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
+			add_action( 'wp_footer', array( $this, 'loaded_assets' ) );
+
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
 			) );
-			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_js_variables', array(
+			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_selection_ui_js_variables', array(
 				'post_id' => get_the_ID(),
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
 				'permalink' => esc_url( add_query_arg( 'revview', 'render', get_permalink( get_the_ID() ) ) ),
 				'styles' => array(),
 				'scripts' => array(),
-				'js_templates' => array(),
 			) ) );
 		}
 	}
 
 	/**
-	 * Register JS and CSS files to load in front end.
+	 * In singular views, check if we should look for templates of this plugin.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param $template
+	 *
+	 * @return mixed|void
+	 */
+	function replace_singular_template( $template ) {
+		if ( is_singular() && $this->can_view_revisions() ) {
+			return $this->get_template( 'singular' );
+		}
+		return $template;
+	}
+
+	/**
+	 * Replace template for singular view for one that only loads Revview selection UI and the iframe to view revisions.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $template
+	 *
+	 * @return mixed|void
+	 */
+	function get_template( $template ) {
+		$template = $template . '.php';
+		$file = plugin_dir_path( __FILE__ ) . 'templates/' . $template;
+		return apply_filters( 'revview_singular_template_' . $template, $file );
+	}
+
+	/**
+	 * If we've loaded Revview selection UI, set identifying class and detect theme.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $classes
+	 *
+	 * @return array
+	 */
+	function body_class( $classes ) {
+		$classes[] = 'revview-ui';
+
+		$classes[] = get_stylesheet();
+
+		return $classes;
+	}
+
+	/**
+	 * In revision preview loaded in iframe, writes JS that sends a message to top window,
+	 * reporting that iframe load finished.
 	 *
 	 * @since 1.0.0
 	 * @access public
 	 */
-	public function register_iframe_assets() {
-		if ( is_singular() && $this->can_view_revisions() ) {
-			add_action( 'wp_footer', array( $this, 'async_load_assets_loaded' ), 21 );
-			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'underscore' );
-		}
+	public function revision_loaded_messenger() {
+		?>
+		<script type="text/javascript">
+			window.onload = function() {
+				window.top.postMessage( 'revview-synced', window.document.origin );
+			};
+		</script>
+		<?php
 	}
 
 	/**
@@ -116,7 +190,7 @@ class Revview {
 	 * @global $wp_scripts, $wp_styles
 	 * @action wp_footer
 	 */
-	public function async_load_assets_loaded() {
+	public function loaded_assets() {
 		global $wp_scripts, $wp_styles;
 
 		$scripts = is_a( $wp_scripts, 'WP_Scripts' ) ? $wp_scripts->done : array();
@@ -126,14 +200,8 @@ class Revview {
 		$styles = apply_filters( 'revview_loaded_styles', $styles );
 		?>
 		<script type="text/javascript">
-			jQuery.extend( window.top.revview.scripts, <?php echo json_encode( $scripts ); ?> );
-			jQuery.extend( window.top.revview.styles, <?php echo json_encode( $styles ); ?> );
-			jQuery.extend( window.top.revview.js_templates, _.map( jQuery( 'script[id^="tmpl-"]' ), function ( script ) {
-				return script.id;
-			} ) );
-			function revviewIframeWindowLoad() {
-				jQuery(window).trigger('load');
-			}
+			jQuery.extend( revview.scripts, <?php echo json_encode( $scripts ); ?> );
+			jQuery.extend( revview.styles, <?php echo json_encode( $styles ); ?> );
 		</script>
 		<?php
 	}
@@ -169,9 +237,7 @@ class Revview {
 	public function print_templates() {
 		?>
 		<script id="tmpl-revview-app" type="text/html">
-			<button class="revview-button revview-start"><?php esc_html_e( 'View Revisions', 'revview' ) ?></button>
 			<button class="revview-button revview-stop"><?php esc_html_e( '&times;', 'revview' ) ?></button>
-			<iframe id="revview-render"></iframe>
 		</script>
 		<script id="tmpl-revview-tooltip" type="text/html">
 			<span class="revview-tooltip-date">{{ data.display.date }}</span>
@@ -190,9 +256,9 @@ class Revview {
 	 */
 	function add_discoverable_elements( $wp_query ) {
 		if ( $wp_query->is_main_query() ) {
-			add_filter( 'the_title', array( $this, 'revview_title' ) );
-			add_filter( 'the_content', array( $this, 'revview_content' ) );
-			add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
+			add_filter( 'the_title', array( $this, 'revview_title' ), 0 );
+			add_filter( 'the_content', array( $this, 'revview_content' ), 0 );
+			add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ), 0 );
 		}
 	}
 
@@ -204,8 +270,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		remove_filter( 'the_title', array( $this, 'revview_title' ) );
-		return '<span class="revview-title"></span>' . $title;
+		if ( isset( $_POST['title'] ) ) {
+			return $_POST['title'];
+		}
+		return $title;
 	}
 
 	/**
@@ -216,8 +284,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		remove_filter( 'the_content', array( $this, 'revview_content' ) );
-		return '<div class="revview-content"></div>' . $content;
+		if ( isset( $_POST['content'] ) ) {
+			return $_POST['content'];
+		}
+		return $content;
 	}
 
 	/**
@@ -228,8 +298,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		remove_filter( 'the_excerpt', array( $this, 'revview_excerpt' ) );
-		return '<div class="revview-excerpt"></div>' . $excerpt;
+		if ( isset( $_POST['excerpt'] ) ) {
+			return $_POST['excerpt'];
+		}
+		return $excerpt;
 	}
 }
 

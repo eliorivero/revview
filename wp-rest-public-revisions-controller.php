@@ -275,9 +275,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		$schema = $this->get_item_schema();
 
 		if ( ! empty( $schema['properties']['title'] ) ) {
-			$data['title'] = array(
-				'rendered' 	=> get_the_title( $post->ID ),
-			);
+			$data['title'] = $post->post_title;
 		}
 
 		if ( ! empty( $schema['properties']['content'] ) ) {
@@ -285,9 +283,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 				$this->prepare_password_response( $post->post_password );
 			}
 
-			$data['content'] = array(
-				'rendered' 	=> apply_filters( 'the_content', $post->post_content ),
-			);
+			$data['content'] = $post->post_content;
 		}
 
 		if ( ! empty( $schema['properties']['excerpt'] ) ) {
@@ -720,18 +716,6 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 						'description' => 'Title for the object, as it exists in the database.',
 						'type'        => 'string',
 						'context'     => array( 'view' ),
-						'properties'  => array(
-							'raw' => array(
-								'description' => 'Content for the object, as it exists in the database.',
-								'type'        => 'string',
-								'context'     => array( 'edit' ),
-							),
-							'rendered' => array(
-								'description' => 'Content for the object, transformed for display.',
-								'type'        => 'string',
-								'context'     => array( 'view', 'edit' ),
-							),
-						),
 					);
 					break;
 
@@ -740,18 +724,6 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 						'description' => 'Content for the object, as it exists in the database.',
 						'type'        => 'string',
 						'context'     => array( 'view' ),
-						'properties'  => array(
-							'raw' => array(
-								'description' => 'Content for the object, as it exists in the database.',
-								'type'        => 'string',
-								'context'     => array( 'edit' ),
-							),
-							'rendered' => array(
-								'description' => 'Content for the object, transformed for display.',
-								'type'        => 'string',
-								'context'     => array( 'view', 'edit' ),
-							),
-						),
 					);
 					break;
 
@@ -760,18 +732,6 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 						'description' => 'Excerpt for the object, as it exists in the database.',
 						'type'        => 'string',
 						'context'     => array( 'view' ),
-						'properties'  => array(
-							'raw' => array(
-								'description' => 'Content for the object, as it exists in the database.',
-								'type'        => 'string',
-								'context'     => array( 'edit' ),
-							),
-							'rendered' => array(
-								'description' => 'Content for the object, transformed for display.',
-								'type'        => 'string',
-								'context'     => array( 'view', 'edit' ),
-							),
-						),
 					);
 					break;
 
