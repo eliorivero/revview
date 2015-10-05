@@ -72,7 +72,8 @@ class Revview {
 	 * @access public
 	 */
 	public function register_loader_assets() {
-		if ( is_singular() && $this->can_view_revisions() ) {
+		$post = get_post();
+		if ( is_singular() && $this->can_view_revisions() && empty( $post->post_password ) ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ) );
 			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
