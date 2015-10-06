@@ -382,6 +382,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		$iframe: null,
 		$stage: null,
 		revisionURL: '',
+		origin: '',
 
 		initialize: function() {
 			// Revision tooltip
@@ -407,6 +408,9 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
 
 			_.bindAll( this, 'renderAreaLoaded', 'requestPage', 'requestPageSuccess' );
+
+			// Save window origin using a fallback for browsers that don't have it
+			this.origin = window.location.origin ? window.location.origin : window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
 
 			window.addEventListener( 'message', this.renderAreaLoaded, false) ;
 
@@ -437,7 +441,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
-		 * Restores original title, content and excerpt.
+		 * Goes back to where it was before entering revision viewing ui.
 		 */
 		stopRevisions: function() {
 			this.hideUI();
@@ -502,7 +506,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * @param { object } e
 		 */
 		renderAreaLoaded: function( e ) {
-			if ( e.origin == document.origin ) {
+			if ( e.origin == this.origin ) {
 				if ( e.data == 'revview-synced' ) {
 					this.$el.trigger( 'update' );
 				}

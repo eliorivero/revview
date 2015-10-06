@@ -186,7 +186,8 @@ class Revview {
 		<script type="text/javascript">
 			(function(window){
 				window.addEventListener( 'load', function() {
-					window.top.postMessage( 'revview-synced', window.document.origin );
+					var origin = window.location.origin ? window.location.origin : window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+					window.top.postMessage( 'revview-synced', origin );
 				});
 			})(window);
 		</script>
