@@ -6,23 +6,30 @@ The plugin adds two endpoints to display, for a given entry and provided that it
 
 
 ```js
-wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/
 ```
-returns all revisions of a post
+returns all revisions of a post specified by parent_id parameter
 
 
 ```js
-wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/(?P<revision_id>[\d]+)
 ```
-returns a single revision of a post
+returns a single revision of a post specified by revision_id parameter
 
 
 ```js
-wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/public/(?P<revision_id>[\d]+)/ids
+wp-json/revview/v1/posts/(?P<parent_id>[\d]+)/revisions/ids
 ```
 returns a list of objects for all revisions containing revision ID, author name and date.
 
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
-##Example
-As a simple example, in a singular view, it will display the date and author of all revisions. Further info can be seen in JS console. If revision is clicked, console will display the update.
+##Usage
+1. Download REST API plugin 2.0 https://github.com/WP-API/WP-API/archive/develop.zip
+
+2. Download Revview plugin https://github.com/eliorivero/revview/archive/master.zip
+
+3. Install and activate both.
+
+4. If you now go to a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post or page.
+
