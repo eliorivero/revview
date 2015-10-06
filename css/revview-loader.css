@@ -28,28 +28,27 @@
 	background: #333;
 	color: #fff;
 	border: none;
-	padding: 10px 0;
-	font-family: sans-serif;
 	transition: background .2s ease-out;
-}
-
-.revview-button:hover, .revview-button:focus {
-	background: #FF4B4B;
-}
-
-.revview-button:active {
-	background: #FF5F5F;
-}
-
-.revview-start {
-	font-size: 12px;
-	font-weight: 300;
+	font: 400 12px sans-serif;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	text-align: center;
 	top: 0;
 	left: 50%;
 	right: 50%;
 	width: 140px;
 	margin-left: -70px;
 	padding: 10px;
+}
+
+.revview-button:hover, .revview-button:focus {
+	background: #FF4B4B;
+	color: #fff;
+}
+
+.revview-button:active {
+	background: #FF5F5F;
+	color: #fff;
 }
 
 /* Tweaks when admin bar is visible */
