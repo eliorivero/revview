@@ -30,8 +30,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 					options.beforeSend = function( xhr ) {
 						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
-						xhr.setRequestHeader( 'X-WP-Revview-Styles', revview.styles );
-						xhr.setRequestHeader( 'X-WP-Revview-Scripts', revview.scripts );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
@@ -522,9 +520,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 			// Update revision information display
 			this.refreshInfo( this.model.get( 'currentInfo' ) );
-
-			// Load styles and scripts
-			this.listAssets( model.get( 'assets' ) );
 		},
 
 		/**
@@ -558,36 +553,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		refreshInfo: function( currentInfo ) {
 			if ( !_.isUndefined( currentInfo ) ) {
 				this.revisionInfo.model.set( currentInfo );
-			}
-		},
-
-		/**
-		 * Parses information returned for styles and scripts.
-		 *
-		 * @param { object } response
-		 */
-		listAssets: function( response ) {
-
-			// Check for and parse our response.
-			if ( _.isEmpty( response ) || _.isUndefined( response ) ) {
-				return;
-			}
-
-			// If additional scripts are required by the revision, parse them
-			if ( _.isObject( response.scripts ) ) {
-				// Count scripts that will be loaded
-				_.each( response.scripts, function( required ) {
-					// Add script handle to list of those already parsed
-					revview.scripts.push( required.handle );
-				}, this );
-			}
-
-			// If additional stylesheets are required by the revision, parse them
-			if ( _.isObject( response.styles ) ) {
-				$( response.styles ).each( function() {
-					// Add stylesheet handle to list of those already parsed
-					revview.styles.push( this.handle );
-				} );
 			}
 		},
 
