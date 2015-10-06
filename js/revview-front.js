@@ -435,7 +435,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		startRevisions: function() {
 			this.showUI();
-			this.renderAreaInit();
 			this.collection.fetch();
 		},
 
@@ -457,30 +456,12 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			return this;
 		},
 
-		loadLastRevision: function( index ) {
-			this.model.set( 'currentRevision', index );
-			this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[index] );
-			this.model.trigger( 'change:currentRevision' );
-
-			// Focus handle so user can use previous/next keyboard arrows to go through the revisions.
-			this.$el.find( '.ui-slider-handle' ).focus();
-		},
-
 		/**
 		 * Fired when the revision index changes. Will fetch the selected revision if the full data is not in collection.
 		 */
 		changeRevision: function() {
 			this.showLoading();
 			this.collection.getRevision( this.model.get( 'currentRevision' ) );
-		},
-
-		/**
-		 * Revision UI has been initialized and iframe loaded.
-		 * Save reference to iframe elements.
-		 * Display last revision information.
-		 */
-		renderAreaInit: function() {
-			this.requestPage( {} );
 		},
 
 		/**
@@ -559,8 +540,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				// Add UI elements
 				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el] ) );
 
-				// Same than current content
-				this.loadLastRevision( 0 );
+				// Load last revision which is the same than current content
+				this.model.set( 'currentRevision', 0 );
+				this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
+				this.model.trigger( 'change:currentRevision' );
+
+				// Focus handle so user can use previous/next keyboard arrows to go through the revisions.
+				this.$el.find( '.ui-slider-handle' ).focus();
 			}
 		},
 
