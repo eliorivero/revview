@@ -66,7 +66,7 @@ class Revview {
 	}
 
 	/**
-	 * Register JS and CSS files to load in front end.
+	 * Load CSS files for revision selection loader.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -74,12 +74,25 @@ class Revview {
 	public function register_loader_assets() {
 		$post = get_post();
 		if ( is_singular() && $this->can_view_revisions() && empty( $post->post_password ) ) {
+			add_action( 'wp_footer', array( $this, 'add_link_to_revision_selection' ) );
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
-			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ) );
-			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
-				'view_revisions' => esc_html__( 'View Revisions', 'revview' ),
-			) ) );
 		}
+	}
+
+	/**
+	 * Add wrapper and link to view revisions.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function add_link_to_revision_selection() {
+		?>
+		<div id="revview">
+			<a href="<?php echo esc_url( add_query_arg( 'revview', 'enabled', get_permalink() ) ) ?>" title="<?php esc_attr_e( 'Start viewing revisions', 'revview' ); ?>" class="revview-button revview-start">
+				<?php esc_html_e( 'View revisions', 'revview' ) ?>
+			</a>
+		</div>
+		<?php
 	}
 
 	/**
