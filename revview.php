@@ -86,9 +86,10 @@ class Revview {
 	 * @access public
 	 */
 	public function add_link_to_revision_selection() {
+		$url = is_ssl() ? preg_replace( '/^(http:)/i', 'https:', get_permalink(), 1 ) : get_permalink();
 		?>
 		<div id="revview">
-			<a href="<?php echo esc_url( add_query_arg( 'revview', 'enabled', get_permalink() ) ) ?>" title="<?php esc_attr_e( 'Start viewing revisions', 'revview' ); ?>" class="revview-button revview-start">
+			<a href="<?php echo esc_url( add_query_arg( 'revview', 'enabled', $url ) ) ?>" title="<?php esc_attr_e( 'Start viewing revisions', 'revview' ); ?>" class="revview-button revview-start">
 				<?php esc_html_e( 'View revisions', 'revview' ) ?>
 			</a>
 		</div>
