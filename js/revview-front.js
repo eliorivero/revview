@@ -47,7 +47,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			 */
 			url: function() {
 				var id = this.get( 'id' ) || '';
-				return WP_API_Settings.root + 'revview/v1/posts/' + revview.post_id + '/revisions/' + id;
+				return WP_API_Settings.root + 'revview/v1/' + revview.rest_base + '/' + revview.post_id + '/revisions/' + id;
 			},
 
 			defaults: _.extend( {},
@@ -76,7 +76,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			 */
 			url: function() {
 				var id = this.get( 'id' ) || revview.post_id;
-				return WP_API_Settings.root + 'revview/v1/posts/' + id + '/revisions/ids';
+				return WP_API_Settings.root + 'revview/v1/' + revview.rest_base + '/' + id + '/revisions/ids';
 			},
 
 			/**

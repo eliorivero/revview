@@ -49,8 +49,7 @@ class Revview {
 	}
 
 	/**
-	 * Registers endpoint to publicly access revisions of a specific post.
-	 * Endpoint is /wp-json/wp/v2/posts/(?P<parent_id>[\d]+)/revisions/public
+	 * Registers endpoints to publicly access revisions of a specific post.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -73,8 +72,8 @@ class Revview {
 	 */
 	public function register_loader_assets() {
 		$post = get_post();
-		if ( is_singular() && $this->can_view_revisions() && empty( $post->post_password ) ) {
 			add_action( 'wp_footer', array( $this, 'add_link_to_revision_selection' ) );
+		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
 		}
 	}
@@ -113,7 +112,7 @@ class Revview {
 	 * @access public
 	 */
 	public function register_selection_ui_assets() {
-		if ( is_singular() && $this->can_view_revisions() ) {
+		if ( is_singular() && $rest_base = $this->get_available_base_rest() ) {
 			add_action( 'wp_footer', array( $this, 'print_templates' ) );
 
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
@@ -121,6 +120,7 @@ class Revview {
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
 			) );
 			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_selection_ui_js_variables', array(
+				'rest_base' => $rest_base,
 				'post_id' => get_the_ID(),
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
 			) ) );
@@ -137,7 +137,7 @@ class Revview {
 	 * @return mixed|void
 	 */
 	function replace_singular_template( $template ) {
-		if ( is_singular() && $this->can_view_revisions() ) {
+		if ( is_singular() && $this->get_available_base_rest() ) {
 			return $this->get_template( 'singular' );
 		}
 		return $template;
@@ -196,25 +196,25 @@ class Revview {
 	}
 
 	/**
-	 * Checks if type of current post is visible in REST.
+	 * Checks if revisions are enabled, post has more than one revision and the type of current post is visible in REST.
 	 *
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return bool
+	 * @return bool|string If revisions for current entry aren't available, returns false. Otherwise a string for REST endpoint base.
 	 */
-	public function can_view_revisions() {
-		static $is_visible;
-		if ( ! isset( $is_visible ) ) {
+	public function get_available_base_rest() {
+		static $rest_base;
+		if ( ! isset( $rest_base ) ) {
 			$post = get_post();
 			if ( $post instanceof WP_Post && wp_revisions_enabled( $post ) && 1 < count( wp_get_post_revisions() ) ) {
 				$post_type = get_post_type_object( get_post_type( $post ) );
-				$is_visible = isset( $post_type->show_in_rest ) && $post_type->show_in_rest;
+				$rest_base = isset( $post_type->show_in_rest ) && $post_type->show_in_rest ? $post_type->rest_base : false;
 			} else {
-				$is_visible = false;
+				$rest_base = false;
 			}
 		}
-		return $is_visible;
+		return $rest_base;
 	}
 
 	/**
