@@ -45,7 +45,7 @@ class Revview {
 			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'register_loader_assets' ) );
 		}
-		add_action( 'loop_start', array( $this, 'add_discoverable_elements' ) );
+		add_action( 'loop_start', array( $this, 'replace_current_with_revision' ) );
 	}
 
 	/**
@@ -243,7 +243,7 @@ class Revview {
 	 *
 	 * @param object $wp_query
 	 */
-	function add_discoverable_elements( $wp_query ) {
+	function replace_current_with_revision( $wp_query ) {
 		if ( $wp_query->is_main_query() ) {
 			add_filter( 'the_title', array( $this, 'revview_title' ), 0 );
 			add_filter( 'the_content', array( $this, 'revview_content' ), 0 );
