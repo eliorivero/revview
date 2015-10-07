@@ -4,7 +4,7 @@
 
 /* Main wrapper */
 #revview {
-	display: block;
+	visibility: hidden;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -17,8 +17,10 @@
 	background-color: rgba( 255,255,255,.95 );
 	box-shadow: 0 3px 20px rgba(0,0,0,.2);
 	font-size: 14px;
-	transition: top .3s ease-out;
 	z-index: 99998;
+}
+#revview.revview-loaded {
+	visibility: visible;
 }
 
 /* Buttons */
@@ -55,4 +57,7 @@
 /* Tweaks when admin bar is visible */
 .admin-bar #revview {
 	top: 32px;
+}
+.admin-bar #revview.body-not-static {
+	top: 0;
 }

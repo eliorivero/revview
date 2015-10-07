@@ -72,27 +72,13 @@ class Revview {
 	 */
 	public function register_loader_assets() {
 		$post = get_post();
-			add_action( 'wp_footer', array( $this, 'add_link_to_revision_selection' ) );
 		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ), array( 'jquery' ) );
+			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
+				'view_revisions' => esc_attr__( 'View Revisions', 'revview' ),
+			) ) );
 		}
-	}
-
-	/**
-	 * Add wrapper and link to view revisions.
-	 *
-	 * @since 1.0.0
-	 * @access public
-	 */
-	public function add_link_to_revision_selection() {
-		$url = is_ssl() ? preg_replace( '/^(http:)/i', 'https:', get_permalink(), 1 ) : get_permalink();
-		?>
-		<div id="revview">
-			<a href="<?php echo esc_url( add_query_arg( 'revview', 'enabled', $url ) ) ?>" title="<?php esc_attr_e( 'Start viewing revisions', 'revview' ); ?>" class="revview-button revview-start">
-				<?php esc_html_e( 'View revisions', 'revview' ) ?>
-			</a>
-		</div>
-		<?php
 	}
 
 	/**
