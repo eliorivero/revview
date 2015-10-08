@@ -38,6 +38,7 @@ class Revview {
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
 			} else {
 				add_action( 'wp_enqueue_scripts', array( $this, 'register_selection_ui_assets' ) );
+				add_filter( 'page_template', array( $this, 'replace_singular_template' ) );
 				add_filter( 'single_template', array( $this, 'replace_singular_template' ) );
 				add_filter( 'body_class', array( $this, 'body_class' ) );
 			}
