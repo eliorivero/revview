@@ -174,11 +174,12 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 
 		$revisions = wp_get_post_revisions( $request['parent_id'] );
 
-		$struct = array();
+		$response = array();
 		foreach ( $revisions as $revision ) {
-			$struct[] = $this->prepare_ids_for_response( $revision, $request );
+			$data = $this->prepare_ids_for_response( $revision, $request );
+			$response[] = $this->prepare_response_for_collection( $data );
 		}
-		return $struct;
+		return $response;
 	}
 
 	/**
@@ -358,10 +359,10 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		}
 
 		if ( isset( $date ) ) {
-			return rest_mysql_to_rfc3339( $date );
+			return mysql_to_rfc3339( $date );
 		}
 
-		return rest_mysql_to_rfc3339( $date_gmt );
+		return mysql_to_rfc3339( $date_gmt );
 	}
 
 	/**
