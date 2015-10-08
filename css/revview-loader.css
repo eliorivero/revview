@@ -47,6 +47,7 @@
 .revview-button:hover, .revview-button:focus {
 	background: #FF4B4B;
 	color: #fff;
+	text-decoration: none;
 }
 
 .revview-button:active {
