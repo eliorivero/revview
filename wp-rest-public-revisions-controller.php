@@ -323,7 +323,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 		// Base fields for every post
 		$data = array(
 			'id' 	 => $post->ID,
-			'author_name' => get_the_author_meta( 'user_nicename', $post->post_author ),
+			'author_name' => get_the_author_meta( 'display_name', $post->post_author ),
 			'date'   => $this->prepare_date_response( $post->post_date_gmt, $post->post_date ),
 		);
 
