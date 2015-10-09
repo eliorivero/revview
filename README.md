@@ -25,11 +25,13 @@ returns a list of objects for all revisions containing revision ID, author name 
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
 ##Usage
-1. Download REST API plugin 2.0 https://github.com/WP-API/WP-API/archive/develop.zip
+0. Install WordPress 4.4 alpha (mandatory due to new stuff the REST API uses) https://wordpress.org/nightly-builds/wordpress-latest.zip
+
+1. Download latest REST API in development https://github.com/WP-API/WP-API/archive/develop.zip
 
 2. Download Revview plugin https://github.com/eliorivero/revview/archive/master.zip
 
 3. Install and activate both.
 
-4. If you now go to a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post or page.
+4. If you now go to a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post, page or custom post type if it's visible in REST API.
 
