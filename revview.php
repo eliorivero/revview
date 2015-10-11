@@ -36,7 +36,7 @@ class Revview {
 			if ( 'render' === $_GET['revview'] ) {
 				add_filter( 'show_admin_bar', '__return_false' );
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
-			} else {
+			} elseif ( 'enabled' === $_GET['revview'] ) {
 				add_action( 'template_redirect', array( $this, 'prepare_template_replacement' ) );
 			}
 		} else {
