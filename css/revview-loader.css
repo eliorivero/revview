@@ -42,6 +42,7 @@
 	width: 140px;
 	margin-left: -70px;
 	padding: 10px;
+	border-radius: 0;
 }
 
 .revview-button:hover, .revview-button:focus {
