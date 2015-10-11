@@ -37,11 +37,7 @@ class Revview {
 				add_filter( 'show_admin_bar', '__return_false' );
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
 			} else {
-				add_action( 'wp_enqueue_scripts', array( $this, 'register_selection_ui_assets' ) );
-				add_filter( 'single_template', array( $this, 'replace_singular_template' ) );
-				add_filter( 'page_template', array( $this, 'replace_singular_template' ) );
-				add_filter( 'singular_template', array( $this, 'replace_singular_template' ) );
-				add_filter( 'body_class', array( $this, 'body_class' ) );
+				add_action( 'template_redirect', array( $this, 'prepare_template_replacement' ) );
 			}
 		} else {
 			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
@@ -74,7 +70,7 @@ class Revview {
 	 */
 	public function register_loader_assets() {
 		$post = get_post();
-		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) ) {
+		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) && ! is_customize_preview() ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ), array( 'jquery' ) );
 			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
@@ -112,6 +108,21 @@ class Revview {
 				'post_id' => get_the_ID(),
 				'datetime_format' => get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
 			) ) );
+		}
+	}
+
+	/**
+	 * If we're in the right context, replace template.
+	 *
+	 * @since 1.0.0
+	 */
+	function prepare_template_replacement() {
+		if ( ! is_customize_preview() ) {
+			add_filter( 'single_template', array( $this, 'replace_singular_template' ) );
+			add_filter( 'page_template', array( $this, 'replace_singular_template' ) );
+			add_filter( 'singular_template', array( $this, 'replace_singular_template' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_selection_ui_assets' ) );
+			add_filter( 'body_class', array( $this, 'body_class' ) );
 		}
 	}
 
