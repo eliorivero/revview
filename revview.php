@@ -35,6 +35,7 @@ class Revview {
 		if ( isset( $_GET['revview'] ) ) {
 			if ( 'render' === $_GET['revview'] ) {
 				add_filter( 'show_admin_bar', '__return_false' );
+				add_action( 'loop_start', array( $this, 'replace_current_with_revision' ) );
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
 			} elseif ( 'enabled' === $_GET['revview'] ) {
 				add_action( 'template_redirect', array( $this, 'prepare_template_replacement' ) );
@@ -43,7 +44,6 @@ class Revview {
 			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'register_loader_assets' ) );
 		}
-		add_action( 'loop_start', array( $this, 'replace_current_with_revision' ) );
 	}
 
 	/**
