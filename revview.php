@@ -258,10 +258,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		if ( isset( $_POST['title'] ) ) {
+		if ( isset( $_POST['revview_title'] ) ) {
 			$post = get_post();
 			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_title', $_POST['title'], $post->ID, 'display' );
+				return sanitize_post_field( 'post_title', $_POST['revview_title'], $post->ID, 'display' );
 			}
 		}
 		return $title;
@@ -275,10 +275,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		if ( isset( $_POST['content'] ) ) {
+		if ( isset( $_POST['revview_content'] ) ) {
 			$post = get_post();
 			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_content', $_POST['content'], $post->ID, 'display' );
+				return sanitize_post_field( 'post_content', $_POST['revview_content'], $post->ID, 'display' );
 			}
 		}
 		return $content;
@@ -292,10 +292,10 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		if ( isset( $_POST['excerpt'] ) ) {
+		if ( isset( $_POST['revview_excerpt'] ) ) {
 			$post = get_post();
 			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_excerpt', $_POST['excerpt'], $post->ID, 'display' );
+				return sanitize_post_field( 'post_excerpt', $_POST['revview_excerpt'], $post->ID, 'display' );
 			}
 		}
 		return $excerpt;

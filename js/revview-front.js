@@ -480,7 +480,11 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					success: this.requestPageSuccess
 				};
 			if ( ! _.isEmpty( model ) ) {
-				query.data = _.pick( model.toJSON(), 'title', 'content', 'excerpt' );
+				var data = {};
+				_.each( _.pick( model.toJSON(), 'title', 'content', 'excerpt' ), function ( element, key ) {
+					data['revview_' + key] = element;
+				});
+				query.data = data;
 			}
 
 			$.ajax(
