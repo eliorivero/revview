@@ -73,8 +73,9 @@ class Revview {
 		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) && ! is_customize_preview() ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ), array( 'jquery' ) );
+			$post_type = get_post_type_object( $post->post_type );
 			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
-				'view_revisions' => esc_attr__( 'View Revisions', 'revview' ),
+				'view_revisions' => sprintf( esc_html__( 'View %s Revisions', 'revview' ), $post_type->labels->singular_name ),
 			) ) );
 		}
 	}
