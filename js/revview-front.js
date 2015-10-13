@@ -541,7 +541,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				this.revisionSelector.model.set( 'revisions', collection );
 
 				// Add UI elements
-				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el, $('<ul class="revview-progress"><li></li><li></li><li></li><li></li></ul>')] ) );
+				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el, $('<div class="revview-progress"><span></span><span></span><span></span></div>')] ) );
 
 				// Load last revision which is the same than current content
 				this.model.set( 'currentRevision', 0 );

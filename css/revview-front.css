@@ -210,46 +210,57 @@ body.revview-ui {
 }
 
 /* Loading animation */
-.revview-loading .revview-progress {
+#revview .revview-progress {
+	opacity: 0;
+	visibility: hidden;
+}
+#revview.revview-loading .revview-progress {
 	list-style: none;
 	display: block;
-	width: 30px;
-	margin: 0 0 0 -15px;
+	width: 40px;
+	margin: 0 0 0 -20px;
 	padding: 0;
 	position: absolute;
 	z-index: 2;
 	top: 50%;
 	left: 50%;
+	line-height: 1;
+	text-align: center;
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 1s ease-out;
 }
 
-.revview-loading .revview-progress li {
+.revview-loading .revview-progress span {
 	margin: 0 3px 0 0;
 	padding: 0;
 	height: 10px;
 	width: 10px;
 	border: 1px solid #ccc;
 	border-radius: 9em;
-	-webkit-animation: revview-progress 2s infinite;
-	animation: revview-progress 2s infinite;
+	-webkit-animation: revview-progress 3s infinite;
+	animation: revview-progress 3s infinite;
 	display: inline-block;
 }
 
-.revview-loading .revview-progress li:nth-child(1n) {
+.revview-loading .revview-progress span:nth-child(1n) {
 	left: -20px;
 	-webkit-animation-delay: 0s;
 	animation-delay: 0s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
 }
 
-.revview-loading .revview-progress li:nth-child(2n) {
+.revview-loading .revview-progress span:nth-child(2n) {
 	left: 0;
-	-webkit-animation-delay: 0.2s;
-	animation-delay: 0.2s;
+	-webkit-animation-delay: 0.3s;
+	animation-delay: 0.3s;
 }
 
-.revview-loading .revview-progress li:nth-child(3n) {
+.revview-loading .revview-progress span:nth-child(3n) {
 	left: 20px;
-	-webkit-animation-delay: 0.4s;
-	animation-delay: 0.4s;
+	-webkit-animation-delay: 0.6s;
+	animation-delay: 0.6s;
 }
 
 @-webkit-keyframes revview-progress {
