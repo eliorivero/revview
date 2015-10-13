@@ -37,7 +37,7 @@ body.revview-ui {
 	padding-top: 100px;
 }
 #revview-stage {
-    height: 100%;
+	height: 100%;
 }
 #revview-render {
 	width: 100%;
@@ -93,7 +93,7 @@ body.revview-ui {
 	background-color: rgba(251, 0, 0, 0.58);
 	position: absolute;
 	top: 0;
-	margin-left: -9px;
+	margin-left: -10px;
 	border-radius: 9em;
 	cursor: pointer;
 	z-index: 1;
@@ -149,7 +149,7 @@ body.revview-ui {
 }
 .revview-revision-list .revview-info-heading {
 	margin: 10px 0 5px;
-    padding: 0;
+	padding: 0;
 	font-size: 14px;
 }
 .revview-revision-list .revview-tooltip-left {
@@ -207,6 +207,85 @@ body.revview-ui {
 	padding: 0;
 	font-size: 21px;
 	font-weight: normal;
+}
+
+/* Loading animation */
+.revview-loading .revview-progress {
+	list-style: none;
+	display: block;
+	width: 30px;
+	margin: 0 0 0 -15px;
+	padding: 0;
+	position: absolute;
+	z-index: 2;
+	top: 50%;
+	left: 50%;
+}
+
+.revview-loading .revview-progress li {
+	margin: 0 3px 0 0;
+	padding: 0;
+	height: 10px;
+	width: 10px;
+	border: 1px solid #ccc;
+	border-radius: 9em;
+	-webkit-animation: revview-progress 2s infinite;
+	animation: revview-progress 2s infinite;
+	display: inline-block;
+}
+
+.revview-loading .revview-progress li:nth-child(1n) {
+	left: -20px;
+	-webkit-animation-delay: 0s;
+	animation-delay: 0s;
+}
+
+.revview-loading .revview-progress li:nth-child(2n) {
+	left: 0;
+	-webkit-animation-delay: 0.2s;
+	animation-delay: 0.2s;
+}
+
+.revview-loading .revview-progress li:nth-child(3n) {
+	left: 20px;
+	-webkit-animation-delay: 0.4s;
+	animation-delay: 0.4s;
+}
+
+@-webkit-keyframes revview-progress {
+	0% {
+		-webkit-transform: scale(0.5);
+		transform: scale(0.5);
+		background: #999;
+	}
+	50% {
+		-webkit-transform: scale(1);
+		transform: scale(1);
+		background: #fff;
+	}
+	100% {
+		-webkit-transform: scale(0.5);
+		transform: scale(0.5);
+		background: #999;
+	}
+}
+
+@keyframes revview-progress {
+	0% {
+		-webkit-transform: scale(0.5);
+		transform: scale(0.5);
+		background: #999;
+	}
+	50% {
+		-webkit-transform: scale(1);
+		transform: scale(1);
+		background: #fff;
+	}
+	100% {
+		-webkit-transform: scale(0.5);
+		transform: scale(0.5);
+		background: #999;
+	}
 }
 
 /* Tweaks when admin bar is visible */
