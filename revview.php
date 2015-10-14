@@ -25,6 +25,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Revview {
 
 	/**
+	 * Areas where the View Post Revisions button can be placed.
+	 *
+	 * @since 1.0.0
+	 * @access private
+	 *
+	 * @var array
+	 */
+	private $position_options = array();
 	 * Class constructor
 	 *
 	 * @since 1.0.0
@@ -44,6 +52,85 @@ class Revview {
 			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'register_loader_assets' ) );
 		}
+		if ( is_admin() ) {
+			$this->position_options = array(
+				'top'    => __( 'Fixed at the Top', 'revview' ),
+				'bottom' => __( 'Fixed at the Bottom', 'revview' ),
+				'before' => __( 'Before Content', 'revview' ),
+				'after'  => __( 'After Content', 'revview' ),
+				'custom' => __( 'Custom Placement', 'revview' ),
+			);
+			add_action( 'admin_init', array( $this, 'add_settings' ) );
+		}
+	}
+
+	/**
+	 * Add options to Settings > Reading.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function add_settings() {
+		add_settings_field( 'revview_position', '<label for="revview_position">' . __( 'Revview Placement', 'revview' ) . '</label>', array( $this,
+			'revview_position_html' ), 'reading' );
+		register_setting( 'reading', 'revview_position', array( $this, 'sanitize_revview_position' ) );
+	}
+
+	/**
+	 * HTML code to display the option to select the placement of View Revisions button.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function revview_position_html() {
+		?>
+		<select name="revview_position" id="revview_position">
+			<?php foreach ( $this->position_options as $value => $label ) : ?>
+				<option value="<?php echo $value; ?>" <?php selected( $value, get_option( 'revview_position', 'top' ) ); ?>><?php echo esc_html( $label );
+					?></option>
+			<?php endforeach; ?>
+		</select>
+		<p class="description"><?php esc_html_e( 'Select where to display the "View Posts Revisions" button.', 'revview' ); ?></p>
+		<p class="js-revview-custom-help hidden"><small><?php esc_html_e( 'For custom button placement, add the following in your PHP template files,
+		where you want to display it:', 'revview' ); ?><br/><code><?php echo esc_html( '<?php do_action( \'revview_view_revisions_button\' ); ?>' );
+					?></code></small></p>
+		<style type="text/css">
+			.no-js .js-revview-custom-help {
+				display: block;
+			}
+		</style>
+		<script type="text/javascript">
+			window.addEventListener( 'load', function() {
+				var position = document.getElementById( 'revview_position' ),
+					customHelp = document.getElementsByClassName( 'js-revview-custom-help' )[0],
+					removeClass_hidden = new RegExp( 'hidden', 'gi' );
+				if ( 'custom' === position.value ) {
+					customHelp.className = customHelp.className.replace( removeClass_hidden, '' );
+				}
+				position.addEventListener( 'change', function() {
+					if ( 'custom' === position.value ) {
+						customHelp.className = customHelp.className.replace( removeClass_hidden, '' );
+					} else {
+						customHelp.className += 'hidden';
+					}
+				} );
+			} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * Checks that the value trying to be saved is in the list of expected values.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param $value
+	 *
+	 * @return string
+	 */
+	public function sanitize_revview_position( $value ) {
+		return in_array( $value, array_keys( $this->position_options ) ) ? $value : 'top';
 	}
 
 	/**
