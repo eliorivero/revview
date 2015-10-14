@@ -5,27 +5,41 @@
 /* Main wrapper */
 #revview {
 	visibility: hidden;
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	padding: 0 2%;
-	width: 100%;
-	height: 0;
-	box-sizing: border-box;
-	background-color: #fff;
-	background-color: rgba( 255,255,255,.95 );
-	box-shadow: 0 3px 20px rgba(0,0,0,.2);
 	font-size: 14px;
 	z-index: 99998;
+	opacity: 0;
+	transition: opacity .5s ease-out;
+}
+#revview.revview-top, #revview.revview-bottom {
+	position: fixed;
+	left: 0;
+	padding: 0 2%;
+	width: 100%;
 	text-align: center;
+}
+#revview.revview-top {
+	top: 0;
+}
+#revview.revview-bottom {
+	bottom: 0;
+}
+#revview.revview-before, #revview.revview-after {
+	position: static;
+	width: auto;
+	text-align: inherit;
+	padding: 0;
+	margin-bottom: 1em;
+}
+#revview.revview-before {
+
 }
 #revview.revview-loaded {
 	visibility: visible;
+	opacity: 1;
 }
 
 /* Buttons */
-.revview-button, .revview-button:active {
+#revview .revview-button, #revview .revview-button:active {
 	box-shadow: 0 2px 20px rgba(0,0,0,.2);
 	background: #333;
 	color: #fff;
@@ -41,21 +55,18 @@
 	display: inline-block;
 }
 
-.revview-button:hover, .revview-button:focus {
+#revview .revview-button:hover, #revview .revview-button:focus {
 	background: #FF4B4B;
 	color: #fff;
 	text-decoration: none;
 }
 
-.revview-button:active {
+#revview .revview-button:active {
 	background: #FF5F5F;
 	color: #fff;
 }
 
 /* Tweaks when admin bar is visible */
-.admin-bar #revview {
+.admin-bar #revview.revview-top {
 	top: 32px;
-}
-.admin-bar #revview.body-not-static {
-	top: 0;
 }
