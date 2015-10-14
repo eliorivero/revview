@@ -54,7 +54,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				wp.api.models.Revision.prototype.defaults,
 				{
 					author_name: '',
-					loaded: false
+					loaded: false,
+					cachedRevision: ''
 				}
 			)
 
@@ -494,11 +495,26 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
-		 * If request ended up ok, receive page HTML and insert it in iframe.
+		 * If request ended up ok, receive page HTML, cache it, and start rendering page.
 		 *
 		 * @param { string } response
 		 */
 		requestPageSuccess: function( response ) {
+			var index = this.model.get( 'currentRevision' ),
+				model = this.collection.at( index );
+			this.collection.remove( this.collection.at( index ) );
+			model.set( 'cachedRevision', response );
+			this.collection.add( model, { at: index, merge: true } );
+
+			this.renderPage( response );
+		},
+
+		/**
+		 * Write to iframe the content of response, either fresh or previously cached.
+		 *
+		 * @param { string } response
+		 */
+		renderPage: function( response ) {
 			this.$iframe.open();
 			this.$iframe.write( response );
 			this.$iframe.close();
@@ -524,7 +540,13 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * @param { Object } model
 		 */
 		placeRevision: function( model ) {
-			this.requestPage( model );
+			var cachedResponse = this.collection.at( this.model.get( 'currentRevision' ) ).get( 'cachedRevision' );
+
+			if ( _.isEmpty( cachedResponse ) ) {
+				this.requestPage( model );
+			} else {
+				this.renderPage( cachedResponse );
+			}
 
 			// Update revision information display
 			this.refreshInfo( this.model.get( 'currentInfo' ) );
