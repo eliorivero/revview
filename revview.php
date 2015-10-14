@@ -181,7 +181,7 @@ class Revview {
 		$post = get_post();
 		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) && ! is_customize_preview() ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
-			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ), array( 'jquery' ) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ) );
 
 			// Save position option
 			$this->view_revisions_position = get_option( 'revview_position', 'top' );
