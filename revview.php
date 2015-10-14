@@ -33,6 +33,28 @@ class Revview {
 	 * @var array
 	 */
 	private $position_options = array();
+
+	/**
+	 * Markup of the View Post Revisions button.
+	 *
+	 * @since 1.0.0
+	 * @access private
+	 *
+	 * @var array
+	 */
+	private $view_revisions_html = array();
+
+	/**
+	 * Position of the View Post Revisions button.
+	 *
+	 * @since 1.0.0
+	 * @access private
+	 *
+	 * @var array
+	 */
+	private $view_revisions_position = '';
+
+	/**
 	 * Class constructor
 	 *
 	 * @since 1.0.0
@@ -160,11 +182,70 @@ class Revview {
 		if ( is_singular() && $this->get_available_base_rest() && empty( $post->post_password ) && ! is_customize_preview() ) {
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-loader.css' , __FILE__ ) );
 			wp_enqueue_script( 'revview', plugins_url( 'js/revview-loader.js' , __FILE__ ), array( 'jquery' ) );
+
+			// Save position option
+			$this->view_revisions_position = get_option( 'revview_position', 'top' );
+
+			// Get singular name for "View {singular post type name} Revisions"
 			$post_type = get_post_type_object( $post->post_type );
-			wp_localize_script( 'revview', 'revviewLoader', apply_filters( 'revview_loader_js_variables', array(
-				'view_revisions' => sprintf( esc_html__( 'View %s Revisions', 'revview' ), $post_type->labels->singular_name ),
-			) ) );
+			$singular_name = $post_type->labels->singular_name;
+
+			// Get link to revision selection UI
+			$view_revisions_link = add_query_arg( 'revview', 'enabled', get_permalink( $post ) );
+			if ( is_ssl() ) {
+				$view_revisions_link = str_replace( 'http:', 'https:', $view_revisions_link );
+			}
+
+			// Compile HTML for button
+			$this->view_revisions_html = '<div id="revview" class="revview-' . $this->view_revisions_position . '"/>';
+			$this->view_revisions_html .= sprintf( '<a class="revview-button revview-start" href="%s">%s</a><!-- /.revview-button -->',
+				esc_url( $view_revisions_link ),
+				esc_html( sprintf( __( 'View %s Revisions', 'revview' ), $singular_name ) )
+			);
+			$this->view_revisions_html .= '</div><!-- /#revview -->';
+
+			if ( 'top' == $this->view_revisions_position || 'bottom' == $this->view_revisions_position ) {
+				// If top or bottom, output in footer.
+				add_action( 'wp_footer', array( $this, 'view_revisions_button_output' ) );
+			} elseif ( 'before' == $this->view_revisions_position || 'after' == $this->view_revisions_position ) {
+				// If before or after, filter the content to insert it.
+				add_filter( 'the_content', array( $this, 'view_revisions_button_content' ), 9 );
+			} else {
+				// Otherwise, user should add the proper action
+				add_action( 'revview_view_revisions_button', array( $this, 'view_revisions_button_output' ) );
+			}
 		}
+	}
+
+	/**
+	 * Output View Revisions button.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function view_revisions_button_output() {
+		echo $this->view_revisions_html;
+	}
+
+	/**
+	 * Insert View Revisions button before or after the content according to user selection.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public function view_revisions_button_content( $content = '' ) {
+		if ( ! is_admin() && is_main_query() ) {
+			if ( 'before' == $this->view_revisions_position ) {
+				return $this->view_revisions_html . $content;
+			} else {
+				return $content . $this->view_revisions_html;
+			}
+		}
+		return $content;
 	}
 
 	/**
