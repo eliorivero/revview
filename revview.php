@@ -132,7 +132,7 @@ class Revview {
 				position.addEventListener( 'change', function() {
 					if ( 'custom' === position.value ) {
 						customHelp.className = customHelp.className.replace( removeClass_hidden, '' );
-					} else {
+					} else if ( ! new RegExp(' hidden', 'gi').test( customHelp.className ) ) {
 						customHelp.className += 'hidden';
 					}
 				} );
