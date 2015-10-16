@@ -199,9 +199,15 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			return true;
 		}
 
-		$post_status_object = get_post_status_object( $parent->post_status );
+		$parent_post_status = get_post_status_object( $parent->post_status );
 
-		if ( $post_status_object->public && empty( $parent->post_password ) ) {
+		/**
+		 * Filters the status of the parent entry whose revision was requested.
+		 *
+		 * @param bool $parent_post_status_public Whether the post status of the parent entry is public or not.
+		 * @param int $post The ID of the entry parent of the requested revision.
+		 */
+		if ( apply_filters( 'revview_allow_revision_load', $parent_post_status->public && empty( $parent->post_password ), $parent->ID ) ) {
 			return true;
 		}
 

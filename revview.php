@@ -423,12 +423,21 @@ class Revview {
 	 */
 	function replace_current_with_revision( $wp_query ) {
 		if ( $wp_query->is_main_query() && isset( $_POST['revview_revision_id'] ) && ! empty( $_POST['revview_revision_id'] ) && is_numeric( $_POST['revview_revision_id'] ) ) {
+
 			$this->requested_revision = wp_get_post_revision( $_POST['revview_revision_id'] );
 			if ( $this->requested_revision instanceof WP_Post ) {
-				$post = get_post( $this->requested_revision->post_parent );
-				if ( $post instanceof WP_Post ) {
-					$post_status = get_post_status_object( $post->post_status );
-					if ( $post_status->public ) {
+
+				$parent = get_post( $this->requested_revision->post_parent );
+				if ( $parent instanceof WP_Post ) {
+
+					$parent_post_status = get_post_status_object( $parent->post_status );
+					/**
+					 * Filters the status of the parent entry whose revision was requested.
+					 *
+					 * @param bool $parent_post_status_public Whether the post status of the parent entry is public or not.
+					 * @param int $post The ID of the entry parent of the requested revision.
+					 */
+					if ( apply_filters( 'revview_allow_revision_load', $parent_post_status->public && empty( $parent->post_password ), $parent->ID ) ) {
 						add_filter( 'the_title', array( $this, 'revview_title' ), 0 );
 						add_filter( 'the_content', array( $this, 'revview_content' ), 0 );
 						add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ), 0 );
