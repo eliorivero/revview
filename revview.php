@@ -50,7 +50,7 @@ class Revview {
 	 * @since 1.0.0
 	 * @access private
 	 *
-	 * @var array
+	 * @var string
 	 */
 	private $view_revisions_position = '';
 
