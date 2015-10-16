@@ -78,35 +78,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			url: function() {
 				var id = this.get( 'id' ) || revview.post_id;
 				return WP_API_Settings.root + 'revview/v1/' + revview.rest_base + '/' + id + '/revisions/ids';
-			},
-
-			/**
-			 * Looks for a revision in the collection first by index.
-			 * @param index
-			 */
-			getRevision: function( index ) {
-				var self = this,
-					found = self.at( index );
-
-				if ( _.isObject( found ) && found.get( 'loaded' ) ) {
-					self.trigger( 'change', found );
-					return;
-				}
-
-				var newRevision = new revview.RevisionModel( {
-					id: self.at( index ).get( 'id' )
-				});
-
-				newRevision.fetch({
-					success: function( model ) {
-						self.remove( self.at( index ) );
-
-						model.set( 'loaded', true );
-						self.add( model, { at: index, merge: true } );
-
-						self.trigger( 'change', model );
-					}
-				});
 			}
 		}
 	);
@@ -288,6 +259,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		selectRevision: function( index ) {
 			this.app.model.set( 'currentRevision', index );
+			this.app.model.trigger( 'change:currentRevision', this.app.collection.at( index ) );
 			this.app.model.set( 'currentInfo', this.selectorRevisions[index] );
 		},
 
@@ -404,8 +376,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			});
 
 			this.listenTo( this.collection, 'request', this.showLoading );
-			this.listenTo( this.model, 'change:currentRevision', this.changeRevision );
-			this.listenTo( this.collection, 'change', this.placeRevision );
+			this.listenTo( this.model, 'change:currentRevision', this.placeRevision );
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
 
 			_.bindAll( this, 'renderAreaLoaded', 'requestPage', 'requestPageSuccess' );
@@ -460,14 +431,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
-		 * Fired when the revision index changes. Will fetch the selected revision if the full data is not in collection.
-		 */
-		changeRevision: function() {
-			this.showLoading();
-			this.collection.getRevision( this.model.get( 'currentRevision' ) );
-		},
-
-		/**
 		 * Fire page request.
 		 *
 		 * @param { object } model
@@ -481,11 +444,9 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 					success: this.requestPageSuccess
 				};
 			if ( ! _.isEmpty( model ) ) {
-				var data = {};
-				_.each( _.pick( model.toJSON(), 'title', 'content', 'excerpt' ), function ( element, key ) {
-					data['revview_' + key] = element;
-				});
-				query.data = data;
+				query.data = {
+					revview_revision_id: model.get( 'id' )
+				};
 			}
 
 			$.ajax(
@@ -540,6 +501,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * @param { Object } model
 		 */
 		placeRevision: function( model ) {
+			this.showLoading();
+
 			var cachedResponse = this.collection.at( this.model.get( 'currentRevision' ) ).get( 'cachedRevision' );
 
 			if ( _.isEmpty( cachedResponse ) ) {

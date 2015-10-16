@@ -55,6 +55,16 @@ class Revview {
 	private $view_revisions_position = '';
 
 	/**
+	 * Revision currently being served.
+	 *
+	 * @since 1.0.0
+	 * @access private
+	 *
+	 * @var WP_Post
+	 */
+	private $requested_revision = '';
+
+	/**
 	 * Class constructor
 	 *
 	 * @since 1.0.0
@@ -409,13 +419,22 @@ class Revview {
 	/**
 	 * If a loop started, check if it's the main query, in which case, add filters to append divs.
 	 *
-	 * @param object $wp_query
+	 * @param WP_Query $wp_query
 	 */
 	function replace_current_with_revision( $wp_query ) {
-		if ( $wp_query->is_main_query() ) {
-			add_filter( 'the_title', array( $this, 'revview_title' ), 0 );
-			add_filter( 'the_content', array( $this, 'revview_content' ), 0 );
-			add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ), 0 );
+		if ( $wp_query->is_main_query() && isset( $_POST['revview_revision_id'] ) && ! empty( $_POST['revview_revision_id'] ) && is_numeric( $_POST['revview_revision_id'] ) ) {
+			$this->requested_revision = wp_get_post_revision( $_POST['revview_revision_id'] );
+			if ( $this->requested_revision instanceof WP_Post ) {
+				$post = get_post( $this->requested_revision->post_parent );
+				if ( $post instanceof WP_Post ) {
+					$post_status = get_post_status_object( $post->post_status );
+					if ( $post_status->public ) {
+						add_filter( 'the_title', array( $this, 'revview_title' ), 0 );
+						add_filter( 'the_content', array( $this, 'revview_content' ), 0 );
+						add_filter( 'the_excerpt', array( $this, 'revview_excerpt' ), 0 );
+					}
+				}
+			}
 		}
 	}
 
@@ -427,13 +446,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_title( $title = '' ) {
-		if ( isset( $_POST['revview_title'] ) ) {
-			$post = get_post();
-			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_title', $_POST['revview_title'], $post->ID, 'display' );
-			}
-		}
-		return $title;
+		return sanitize_post_field( 'post_title', $this->requested_revision->post_title, $this->requested_revision->post_parent, 'display' );
 	}
 
 	/**
@@ -444,13 +457,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_content( $content = '' ) {
-		if ( isset( $_POST['revview_content'] ) ) {
-			$post = get_post();
-			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_content', $_POST['revview_content'], $post->ID, 'display' );
-			}
-		}
-		return $content;
+		return sanitize_post_field( 'post_content', $this->requested_revision->post_content, $this->requested_revision->post_parent, 'display' );
 	}
 
 	/**
@@ -461,13 +468,7 @@ class Revview {
 	 * @return string
 	 */
 	function revview_excerpt( $excerpt = '' ) {
-		if ( isset( $_POST['revview_excerpt'] ) ) {
-			$post = get_post();
-			if ( $post instanceof WP_Post ) {
-				return sanitize_post_field( 'post_excerpt', $_POST['revview_excerpt'], $post->ID, 'display' );
-			}
-		}
-		return $excerpt;
+		return sanitize_post_field( 'post_excerpt', $this->requested_revision->post_excerpt, $this->requested_revision->post_parent, 'display' );
 	}
 }
 
