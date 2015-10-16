@@ -230,6 +230,7 @@ body.revview-ui {
 	opacity: 1;
 	visibility: visible;
 	transition: opacity 1s ease-out;
+	box-sizing: border-box;
 }
 
 .revview-loading .revview-progress span {
@@ -242,6 +243,7 @@ body.revview-ui {
 	-webkit-animation: revview-progress 3s infinite;
 	animation: revview-progress 3s infinite;
 	display: inline-block;
+	box-sizing: border-box;
 }
 
 .revview-loading .revview-progress span:nth-child(1n) {
