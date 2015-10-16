@@ -259,7 +259,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		selectRevision: function( index ) {
 			this.app.model.set( 'currentRevision', index );
-			this.app.model.trigger( 'change:currentRevision', this.app.collection.at( index ) );
 			this.app.model.set( 'currentInfo', this.selectorRevisions[index] );
 		},
 
@@ -497,16 +496,14 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		/**
 		 * Load selected revision.
 		 * Updates displayed revision information.
-		 *
-		 * @param { Object } model
 		 */
-		placeRevision: function( model ) {
+		placeRevision: function() {
 			this.showLoading();
-
-			var cachedResponse = this.collection.at( this.model.get( 'currentRevision' ) ).get( 'cachedRevision' );
+			var requestedRevision = this.collection.at( this.model.get( 'currentRevision' ) ),
+				cachedResponse = requestedRevision.get( 'cachedRevision' );
 
 			if ( _.isEmpty( cachedResponse ) ) {
-				this.requestPage( model );
+				this.requestPage( requestedRevision );
 			} else {
 				this.renderPage( cachedResponse );
 			}
@@ -528,8 +525,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				// Add UI elements
 				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el, $('<div class="revview-progress"><span></span><span></span><span></span></div>')] ) );
 
-				// Load last revision which is the same than current content
-				this.model.set( 'currentRevision', 0 );
+				// Current revision is already loaded: is the current content, so fill in revision info and trigger change to initialize.
 				this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
 				this.model.trigger( 'change:currentRevision' );
 
