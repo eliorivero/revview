@@ -86,14 +86,14 @@ body.revview-ui {
 }
 
 .revview-revision-list .ui-slider-handle {
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 	display: inline-block;
 	background-color: #fb323a;
 	background-color: rgba(251, 0, 0, 0.58);
 	position: absolute;
-	top: 0;
-	margin-left: -10px;
+	top: 1px;
+	margin-left: -9px;
 	border-radius: 9em;
 	cursor: pointer;
 	z-index: 1;
@@ -106,12 +106,19 @@ body.revview-ui {
 
 .revview-revision-list .revview-tick {
 	position: absolute;
-	top: 8px;
+	top: 3px;
 	display: block;
-	height: 5px;
-	width: 2px;
-	margin-left: -1px;
+	width: 14px;
+	height: 14px;
+	margin-left: -7px;
 	background-color: #ccc;
+	border-radius: 9em;
+	box-shadow: inset 0 0 0 1px #ccc, inset 0 0 0 3px #fff;
+	transition: all .2s ease-in-out;
+}
+.revview-revision-list .revview-tick:hover {
+	background-color: #fb323a;
+	box-shadow: inset 0 0 0 3px #fb323a;
 }
 
 /* Tooltip */
