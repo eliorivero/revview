@@ -404,7 +404,8 @@ class Revview {
 	public function print_templates() {
 		?>
 		<script id="tmpl-revview-app" type="text/html">
-			<button class="revview-button revview-stop"><?php esc_html_e( '&times;', 'revview' ) ?></button>
+			<button class="revview-button revview-stop" title="<?php esc_attr_e( 'Close Revisions', 'revview' ); ?>"><?php esc_html_e( '&times;', 'revview' )
+				?></button>
 		</script>
 		<script id="tmpl-revview-tooltip" type="text/html">
 			<span class="revview-tooltip-date">{{ data.display.date }}</span>
