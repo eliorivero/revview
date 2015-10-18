@@ -16,7 +16,7 @@
 	background-color: #fff;
 	background-color: rgba( 255,255,255,.95 );
 	box-shadow: 0 3px 20px rgba(0,0,0,.2);
-	font-size: 14px;
+	font: 400 14px sans-serif;
 	transition: top .3s ease-out;
 	z-index: 99998;
 }
@@ -29,6 +29,8 @@
 /* Revision stage */
 .revview-ui {
 	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 html.revview-ui {
 	overflow: hidden;
@@ -194,6 +196,7 @@ body.revview-ui {
 	font-family: sans-serif;
 	transition: background .2s ease-out;
 	border-radius: 0;
+	cursor: pointer;
 }
 
 .revview-button:hover, .revview-button:focus {
