@@ -327,12 +327,13 @@ class Revview {
 	 * Replace template for singular view for one that only loads Revview selection UI and the iframe to view revisions.
 	 *
 	 * @since 1.0.0
+	 * @access private
 	 *
 	 * @param string $template
 	 *
 	 * @return mixed|void
 	 */
-	function get_template( $template ) {
+	private function get_template( $template ) {
 		$template = $template . '.php';
 		$file = plugin_dir_path( __FILE__ ) . 'templates/' . $template;
 		return apply_filters( 'revview_singular_template_' . $template, $file );
