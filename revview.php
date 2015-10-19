@@ -294,6 +294,7 @@ class Revview {
 	 * If we're in the right context, replace template.
 	 *
 	 * @since 1.0.0
+	 * @access public
 	 */
 	function prepare_template_replacement() {
 		if ( ! is_customize_preview() ) {
@@ -309,6 +310,7 @@ class Revview {
 	 * In singular views, check if we should look for templates of this plugin.
 	 *
 	 * @since 1.0.0
+	 * @access public
 	 *
 	 * @param $template
 	 *
@@ -340,6 +342,7 @@ class Revview {
 	 * If we've loaded Revview selection UI, set identifying class and detect theme.
 	 *
 	 * @since 1.0.0
+	 * @access public
 	 *
 	 * @param array $classes
 	 *
@@ -420,6 +423,9 @@ class Revview {
 	/**
 	 * If a loop started, check if it's the main query, in which case, add filters to append divs.
 	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
 	 * @param WP_Query $wp_query
 	 */
 	function replace_current_with_revision( $wp_query ) {
@@ -451,6 +457,9 @@ class Revview {
 	/**
 	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the title.
 	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
 	 * @param string $title
 	 *
 	 * @return string
@@ -462,6 +471,9 @@ class Revview {
 	/**
 	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the content.
 	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
 	 * @param string $content
 	 *
 	 * @return string
@@ -472,6 +484,9 @@ class Revview {
 
 	/**
 	 * Appends a div that will be used in JS to get the closest parent wrapper and replace the excerpt.
+	 *
+	 * @since 1.0.0
+	 * @access public
 	 *
 	 * @param string $excerpt
 	 *
