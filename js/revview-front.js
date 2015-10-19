@@ -417,7 +417,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		stopRevisions: function() {
 			this.hideUI();
 			var params = document.location.search.slice( 1 ).split( '&' );
-			document.location = document.location.href.replace( document.location.search, ( params.length > 1 ? '?' : '' ) + _.filter( params, function( element ) { return 'revview=enabled' !== element; } ).join( '&' ) );
+			document.location = document.location.href.replace( document.location.search, ( params.length > 1 ? '?' : '' ) + _.filter( params, function( param ) { return 'revview=enabled' !== param; } ).join( '&' ) );
 		},
 
 		/**
