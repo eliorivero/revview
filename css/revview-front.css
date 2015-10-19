@@ -313,3 +313,20 @@ body.revview-ui {
 body.twentyfifteen:before {
 	content: initial !important;
 }
+
+@media screen and ( min-width: 481px ) {
+	.revview-revision-list .revview-select {
+		display: none;
+	}
+}
+@media screen and ( max-width: 480px ) {
+	.revview-revision-list .ui-slider:before,
+	.revview-revision-list .ui-slider-handle,
+	.revview-revision-list .revview-tick,
+	.revview-revision-list .revview-tooltip {
+		display: none !important;
+	}
+	.revview-revision-list .revview-select {
+		display: block;
+	}
+}

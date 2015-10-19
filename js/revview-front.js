@@ -205,7 +205,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		events: {
 			'mousemove' : 'mouseMove',
 			'mouseleave' : 'mouseLeave',
-			'mouseenter' : 'mouseEnter'
+			'mouseenter' : 'mouseEnter',
+			'change .revview-select' : 'dropdownChanged'
 		},
 
 		currentRevisionIndex: 0,
@@ -214,7 +215,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			this.tooltip = args.tooltip;
 			this.app = args.app;
 
-			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter', 'refreshBarOffset' );
+			_.bindAll( this, 'stop', 'mouseMove', 'mouseLeave', 'mouseEnter', 'refreshBarOffset', 'dropdownChanged' );
 
 			this.refreshTooltip = _.throttle( this.refreshTooltip, 150 );
 
@@ -249,6 +250,10 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 			this.refreshBarOffset();
 
+			// Render fallback select used for small mobile screens
+			this.$selectDropdown = $( '<select class="revview-select">' + _.map( this.selectorRevisions, function( option, index ) { return '<option value="' + index + '">' + option.date + ' &mdash; ' + option.author_name + '</option>'; } ) + '</select>' );
+			this.$el.prepend( this.$selectDropdown );
+
 			return this;
 		},
 
@@ -263,12 +268,24 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		},
 
 		/**
+		 * User changes the fallback select control.
+		 *
+		 * @param {object} e Select element event
+		 */
+		dropdownChanged: function ( e ) {
+			var value = parseInt( e.currentTarget.value );
+			this.$el.slider( 'value', value );
+			this.selectRevision( value );
+		},
+
+		/**
 		 * User stopped dragging the slider handle or clicked on the selection bar.
 		 *
 		 * @param { object } e
 		 * @param where
 		 */
 		stop: function( e, where ) {
+			this.$selectDropdown.val( where.value );
 			this.selectRevision( where.value );
 		},
 
