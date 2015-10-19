@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Revview 1.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/revview\n"
-"POT-Creation-Date: 2015-10-14 00:29:12+00:00\n"
+"POT-Creation-Date: 2015-10-19 15:56:51+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,75 +12,83 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: revview.php:79
+#: revview.php:90
 msgid "Fixed at the Top"
 msgstr ""
 
-#: revview.php:80
+#: revview.php:91
 msgid "Fixed at the Bottom"
 msgstr ""
 
-#: revview.php:81
+#: revview.php:92
 msgid "Before Content"
 msgstr ""
 
-#: revview.php:82
+#: revview.php:93
 msgid "After Content"
 msgstr ""
 
-#: revview.php:83
+#: revview.php:94
 msgid "Custom Placement"
 msgstr ""
 
-#: revview.php:96
+#: revview.php:107
 msgid "Revview Placement"
 msgstr ""
 
-#: revview.php:115
+#: revview.php:126
 msgid "Select where to display the \"View Posts Revisions\" button."
 msgstr ""
 
-#: revview.php:116
+#: revview.php:127
 msgid ""
 "For custom button placement, add the following in your PHP template files,\n"
 "\t\twhere you want to display it:"
 msgstr ""
 
-#: revview.php:203
+#: revview.php:214
 msgid "View %s Revisions"
 msgstr ""
 
-#: revview.php:397
+#: revview.php:321
+msgid "Revisions of %s"
+msgstr ""
+
+#: revview.php:426
+msgid "Close Revisions"
+msgstr ""
+
+#: revview.php:426
 msgid "&times;"
 msgstr ""
 
-#: revview.php:401
+#: revview.php:431
 msgid "By"
 msgstr ""
 
-#: revview.php:404
+#: revview.php:434
 msgid "Current Revision"
 msgstr ""
 
-#: revview.php:404
+#: revview.php:434
 msgid "by"
 msgstr ""
 
 #: wp-rest-public-revisions-controller.php:147
 #: wp-rest-public-revisions-controller.php:172
-#: wp-rest-public-revisions-controller.php:224
+#: wp-rest-public-revisions-controller.php:230
 msgid "Invalid post parent ID."
 msgstr ""
 
-#: wp-rest-public-revisions-controller.php:208
+#: wp-rest-public-revisions-controller.php:214
 msgid "Revisions are unavailable for this post."
 msgstr ""
 
-#: wp-rest-public-revisions-controller.php:230
+#: wp-rest-public-revisions-controller.php:236
 msgid "Invalid post revision ID."
 msgstr ""
 
-#: wp-rest-public-revisions-controller.php:379
+#: wp-rest-public-revisions-controller.php:385
 msgid "There is no excerpt because this is a protected post."
 msgstr ""
 
