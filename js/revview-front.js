@@ -341,9 +341,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	 */
 	revview.RevisionApp = Backbone.View.extend({
 		id: 'revview',
-
-		className: 'revview-off', // starts hidden
-
+		
 		template: wp.template( 'revview-app' ),
 
 		events: {
