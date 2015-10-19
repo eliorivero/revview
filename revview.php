@@ -78,7 +78,7 @@ class Revview {
 				add_action( 'loop_start', array( $this, 'replace_current_with_revision' ) );
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
 			} elseif ( 'enabled' === $_GET['revview'] ) {
-				add_action( 'template_redirect', array( $this, 'prepare_template_replacement' ) );
+				add_action( 'after_setup_theme', array( $this, 'prepare_template_replacement' ) );
 			}
 		} else {
 			add_action( 'rest_api_init', array( $this, 'register_route_public_revisions' ) );
@@ -298,12 +298,26 @@ class Revview {
 	 */
 	function prepare_template_replacement() {
 		if ( ! is_customize_preview() ) {
+			add_theme_support( 'title-tag' );
+			add_filter( 'wp_title', array( $this, 'revision_selection_page_title' ) );
 			add_filter( 'single_template', array( $this, 'replace_singular_template' ) );
 			add_filter( 'page_template', array( $this, 'replace_singular_template' ) );
 			add_filter( 'singular_template', array( $this, 'replace_singular_template' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'register_selection_ui_assets' ) );
 			add_filter( 'body_class', array( $this, 'body_class' ) );
 		}
+	}
+
+	/**
+	 * Compose title of revision selection frame.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 *
+	 * @return string
+	 */
+	function revision_selection_page_title() {
+		return esc_html( sprintf( __( 'Revisions of %s', 'revview' ), single_post_title( '', false ) ) );
 	}
 
 	/**
