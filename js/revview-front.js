@@ -407,7 +407,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Called by button to view revisions.
 		 */
 		startRevisions: function() {
-			this.showUI();
 			this.collection.fetch();
 		},
 
@@ -415,7 +414,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 * Goes back to where it was before entering revision viewing ui.
 		 */
 		stopRevisions: function() {
-			this.hideUI();
 			var params = document.location.search.slice( 1 ).split( '&' );
 			document.location = document.location.href.replace( document.location.search, ( params.length > 1 ? '?' : '' ) + _.filter( params, function( param ) { return 'revview=enabled' !== param; } ).join( '&' ) );
 		},
@@ -544,22 +542,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			if ( !_.isUndefined( currentInfo ) ) {
 				this.revisionInfo.model.set( currentInfo );
 			}
-		},
-
-		/**
-		 * Shows UI for revision selection. Hides start button, shows stop button.
-		 */
-		showUI: function() {
-			this.$el.removeClass( 'revview-off' );
-			this.$el.addClass( 'revview-on' );
-		},
-
-		/**
-		 * Hides UI for revision selection. Hides stop button, shows start button.
-		 */
-		hideUI: function() {
-			this.$el.removeClass( 'revview-on' );
-			this.$el.addClass( 'revview-off' );
 		},
 
 		showLoading: function() {

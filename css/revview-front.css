@@ -21,11 +21,6 @@
 	z-index: 99998;
 }
 
-#revview.revview-off {
-	top: 0;
-	height: 0;
-}
-
 /* Revision stage */
 .revview-ui {
 	height: 100%;
@@ -177,12 +172,6 @@ body.revview-ui {
 .revview-revision-list .revview-tooltip-right:after {
 	left: 100%;
 	margin-left: -20px;
-}
-
-.revview-off .ui-slider,
-.revview-off .revview-info,
-.revview-off .revview-stop{
-	display: none;
 }
 
 /* Buttons */
