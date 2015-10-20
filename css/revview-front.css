@@ -199,11 +199,10 @@ body.revview-ui {
 
 .revview-stop, .revview-stop:active {
 	position: absolute;
-	bottom: -30px;
-	right: 50%;
+	bottom: 0;
+	right: 0;
 	height: 30px;
 	width: 30px;
-	margin-right: -15px;
 	padding: 0;
 	font-size: 21px;
 	font-weight: normal;
@@ -320,13 +319,33 @@ body.twentyfifteen:before {
 	}
 }
 @media screen and ( max-width: 480px ) {
+	#revview {
+		height: 75px;
+	}
+	.revview-revision-list {
+		padding-top: 40px;
+	}
 	.revview-revision-list .ui-slider:before,
 	.revview-revision-list .ui-slider-handle,
 	.revview-revision-list .revview-tick,
-	.revview-revision-list .revview-tooltip {
+	.revview-revision-list .revview-tooltip,
+	.revview-info-content {
 		display: none !important;
 	}
 	.revview-revision-list .revview-select {
 		display: block;
+		width: 100%;
+		height: 25px;
+		border-radius: 5px;
+		font-size: 13px;
+	}
+	.revview-info {
+		position: absolute;
+		top: 0;
+	}
+	.revview-stop {
+		bottom: auto;
+		top: 0;
+		margin: 0;
 	}
 }
