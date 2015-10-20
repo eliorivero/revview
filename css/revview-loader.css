@@ -70,3 +70,14 @@
 .admin-bar #revview.revview-top {
 	top: 32px;
 }
+
+@media screen and (max-width: 782px) {
+	.admin-bar #revview.revview-top {
+		top: 46px;
+	}
+}
+@media screen and (max-width: 600px) {
+	.admin-bar #revview.revview-top {
+		position: absolute;
+	}
+}
