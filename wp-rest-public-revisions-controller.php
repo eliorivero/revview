@@ -247,9 +247,14 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 			 * Base properties for every Revision
 			 */
 			'properties' => array(
-				'author'          => array(
-					'description' => 'The ID for the author of the object.',
+				'id'              => array(
+					'description' => 'Unique identifier for the object.',
 					'type'        => 'integer',
+					'context'     => array( 'view' ),
+				),
+				'author_name'     => array(
+					'description' => 'The display name of the author of the object.',
+					'type'        => 'string',
 					'context'     => array( 'view' ),
 				),
 				'date'            => array(
@@ -258,82 +263,8 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 					'format'      => 'date-time',
 					'context'     => array( 'view' ),
 				),
-				'date_gmt'        => array(
-					'description' => 'The date the object was published, as GMT.',
-					'type'        => 'string',
-					'format'      => 'date-time',
-					'context'     => array( 'view' ),
-				),
-				'guid'            => array(
-					'description' => 'GUID for the object, as it exists in the database.',
-					'type'        => 'string',
-					'context'     => array( 'view' ),
-				),
-				'id'              => array(
-					'description' => 'Unique identifier for the object.',
-					'type'        => 'integer',
-					'context'     => array( 'view' ),
-				),
-				'modified'        => array(
-					'description' => 'The date the object was last modified.',
-					'type'        => 'string',
-					'format'      => 'date-time',
-					'context'     => array( 'view' ),
-				),
-				'modified_gmt'    => array(
-					'description' => 'The date the object was last modified, as GMT.',
-					'type'        => 'string',
-					'format'      => 'date-time',
-					'context'     => array( 'view' ),
-				),
-				'parent'          => array(
-					'description' => 'The ID for the parent of the object.',
-					'type'        => 'integer',
-					'context'     => array( 'view' ),
-				),
-				'slug'            => array(
-					'description' => 'An alphanumeric identifier for the object unique to its type.',
-					'type'        => 'string',
-					'context'     => array( 'view' ),
-			),
 			),
 		);
-
-		$parent_schema = $this->parent_controller->get_item_schema();
-
-		foreach ( array( 'title', 'content', 'excerpt' ) as $property ) {
-			if ( empty( $parent_schema['properties'][ $property ] ) ) {
-				continue;
-			}
-
-			switch ( $property ) {
-
-				case 'title':
-					$schema['properties']['title'] = array(
-						'description' => 'Title for the object, as it exists in the database.',
-						'type'        => 'string',
-						'context'     => array( 'view' ),
-					);
-					break;
-
-				case 'content':
-					$schema['properties']['content'] = array(
-						'description' => 'Content for the object, as it exists in the database.',
-						'type'        => 'string',
-						'context'     => array( 'view' ),
-					);
-					break;
-
-				case 'excerpt':
-					$schema['properties']['excerpt'] = array(
-						'description' => 'Excerpt for the object, as it exists in the database.',
-						'type'        => 'string',
-						'context'     => array( 'view' ),
-		);
-					break;
-
-			}
-		}
 
 		return $this->add_additional_fields_schema( $schema );
 	}
