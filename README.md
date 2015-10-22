@@ -35,3 +35,4 @@ The JSON object returned includes the title, content, excerpt and revision date,
 
 4. If you now go to a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post, page or custom post type if it's visible in REST API.
 
+The placement of the View Revisions button can be changed in WP Admin > Settings > Reading.
