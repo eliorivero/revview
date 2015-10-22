@@ -14,42 +14,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	revview.RevisionModel = wp.api.models.Revision.extend( _.extend(
 		/** @lends Revision.prototype */
 		{
-			/**
-			 * Set nonce header before every Backbone sync
-			 *
-			 * @param {string} method
-			 * @param {Backbone.Model} model
-			 * @param {{beforeSend}, *} options
-			 * @returns {*}
-			 */
-			sync: function( method, model, options ) {
-				options = options || {};
-
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
-					var beforeSend = options.beforeSend;
-
-					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
-
-						if ( beforeSend ) {
-							return beforeSend.apply( this, arguments );
-						}
-					};
-				}
-
-				return Backbone.sync( method, model, options );
-			},
-
-			/**
-			 * Return URL for the model
-			 *
-			 * @returns {string}
-			 */
-			url: function() {
-				var id = this.get( 'id' ) || '';
-				return WP_API_Settings.root + 'revview/v1/' + revview.rest_base + '/' + revview.post_id + '/revisions/' + id;
-			},
-
 			defaults: _.extend( {},
 				wp.api.models.Revision.prototype.defaults,
 				{
