@@ -355,6 +355,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 			this.listenTo( this.collection, 'request', this.showLoading );
 			this.listenTo( this.model, 'change:currentRevision', this.placeRevision );
+			this.listenTo( this.model, 'change:currentInfo', this.refreshInfo );
 			this.listenToOnce( this.collection, 'sync', this.firstSync );
 
 			_.bindAll( this, 'renderAreaLoaded', 'requestPage', 'requestPageSuccess' );
@@ -485,9 +486,6 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			} else {
 				this.renderPage( cachedResponse );
 			}
-
-			// Update revision information display
-			this.refreshInfo( this.model.get( 'currentInfo' ) );
 		},
 
 		/**
@@ -515,12 +513,10 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		/**
 		 * Set current revision information to be displayed.
 		 *
-		 * @param { object } currentInfo
+		 * @param { object } model
 		 */
-		refreshInfo: function( currentInfo ) {
-			if ( !_.isUndefined( currentInfo ) ) {
-				this.revisionInfo.model.set( currentInfo );
-			}
+		refreshInfo: function( model ) {
+			this.revisionInfo.model.set( model.get( 'currentInfo' ) );
 		},
 
 		showLoading: function() {
