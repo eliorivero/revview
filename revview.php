@@ -74,10 +74,10 @@ class Revview {
 		add_action( 'plugins_loaded', array( $this, 'localization' ) );
 		if ( isset( $_GET['revview'] ) ) {
 			if ( 'render' === $_GET['revview'] ) {
-				add_filter( 'show_admin_bar', '__return_false' );
 				add_action( 'loop_start', array( $this, 'replace_current_with_revision' ) );
 				add_action( 'wp_footer', array( $this, 'revision_loaded_messenger' ) );
 			} elseif ( 'enabled' === $_GET['revview'] ) {
+				add_filter( 'show_admin_bar', '__return_false' );
 				add_action( 'after_setup_theme', array( $this, 'prepare_template_replacement' ) );
 			}
 		} else {
