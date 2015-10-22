@@ -93,7 +93,7 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Get a collection of IDs of revisions.
+	 * Get a collection of revision IDs.
 	 *
 	 * @since 1.0.0
 	 * @access public
