@@ -62,7 +62,7 @@ body.revview-ui {
 /* Revision selection bar */
 .revview-revision-list {
 	position: relative;
-	padding: 15px 0;
+	padding: 5px 0 15px;
 }
 
 .revview-revision-list .ui-slider {
@@ -121,9 +121,10 @@ body.revview-ui {
 /* Tooltip */
 .revview-revision-list .revview-tooltip {
 	position: absolute;
+	z-index: 1;
 	background-color: #333;
 	color: #fff;
-	top: 35px;
+	bottom: 40px;
 	padding: 5px 0;
 	text-align: center;
 	font-size: 12px;
@@ -139,8 +140,8 @@ body.revview-ui {
 	width: 0;
 	position: absolute;
 	pointer-events: none;
-	border-bottom-color: #333;
-	top: -16px;
+	border-top-color: #333;
+	bottom: -16px;
 	left: 50%;
 	margin-left: -8px;
 	border-width: 8px;
@@ -149,7 +150,7 @@ body.revview-ui {
 	display: block;
 }
 .revview-revision-list .revview-info {
-	margin: 5px 0;
+	margin: 0 0 15px;
 }
 .revview-revision-list .revview-info-heading {
 	margin: 10px 0 5px;
@@ -199,10 +200,12 @@ body.revview-ui {
 
 .revview-stop, .revview-stop:active {
 	position: absolute;
-	bottom: 0;
+	z-index: 0;
+	top: 0;
 	right: 0;
 	height: 30px;
 	width: 30px;
+	margin: 0;
 	padding: 0;
 	font-size: 21px;
 	font-weight: normal;
@@ -342,10 +345,5 @@ body.twentyfifteen:before {
 	.revview-info {
 		position: absolute;
 		top: 0;
-	}
-	.revview-stop {
-		bottom: auto;
-		top: 0;
-		margin: 0;
 	}
 }

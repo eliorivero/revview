@@ -499,7 +499,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 				this.revisionSelector.model.set( 'revisions', collection );
 
 				// Add UI elements
-				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionTooltip.render().el, this.revisionSelector.render().el, this.revisionInfo.render().el, $('<div class="revview-progress"><span></span><span></span><span></span></div>')] ) );
+				this.$el.prepend( $('<div class="revview-revision-list" />').append( [this.revisionInfo.render().el, this.revisionTooltip.render().el, this.revisionSelector.render().el, $('<div class="revview-progress"><span></span><span></span><span></span></div>')] ) );
 
 				// Current revision is already loaded: is the current content, so fill in revision info and trigger change to initialize.
 				this.model.set( 'currentInfo', this.revisionSelector.selectorRevisions[0] );
