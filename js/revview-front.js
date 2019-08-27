@@ -2,7 +2,7 @@
  * Revview - Revision Selection Timeline
  */
 
-var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
+var wpApiSettings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 
 (function ( $ ) {
 
@@ -11,11 +11,11 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	/**
 	 * Backbone model for public revisions
 	 */
-	revview.RevisionModel = wp.api.models.Revision.extend( _.extend(
-		/** @lends Revision.prototype */
+	revview.RevisionModel = wp.api.models.PostRevision.extend( _.extend(
+		/** @lends PostRevision.prototype */
 		{
 			defaults: _.extend( {},
-				wp.api.models.Revision.prototype.defaults,
+				wp.api.models.PostRevision.prototype.defaults,
 				{
 					author_name: '',
 					loaded: false,
@@ -29,7 +29,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 	/**
 	 * Backbone public revisions collection
 	 */
-	revview.RevisionList = wp.api.collections.Revisions.extend(
+	revview.RevisionList = wp.api.collections.PostRevisions.extend(
 		/** @lends Revisions.prototype */
 		{
 			model: revview.RevisionModel,
@@ -41,7 +41,7 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 			 */
 			url: function() {
 				var id = this.get( 'id' ) || revview.post_id;
-				return WP_API_Settings.root + 'revview/v1/' + revview.rest_base + '/' + id + '/revisions/ids';
+				return wpApiSettings.root + 'revview/v1/' + revview.rest_base + '/' + id + '/revisions/ids';
 			}
 		}
 	);
@@ -196,7 +196,8 @@ var WP_API_Settings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		render: function() {
 			this.selectorRevisions = _.each( this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] ), function( revision ) {
-				revision.date = revviewDate( revview.datetime_format, revision.date );
+				console.log( revview.datetime_format, revision.date );
+				revision.date = moment( revision.date ).formatPHP( revview.datetime_format );
 			});
 
 			// Revision selection bar

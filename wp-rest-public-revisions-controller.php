@@ -47,7 +47,9 @@ class WP_REST_Public_Revisions_Controller extends WP_REST_Controller {
 	public function __construct( $parent_post_type ) {
 		$this->parent_post_type = $parent_post_type;
 		$this->parent_controller = new WP_REST_Posts_Controller( $parent_post_type );
-		$this->parent_base = $this->parent_controller->get_post_type_base( $this->parent_post_type );
+		$post_type_obj = get_post_type_object( $parent_post_type );
+		//$this->parent_base = $this->parent_controller->get_post_type_base( $this->parent_post_type );
+		$this->parent_base = ! empty( $post_type_obj->rest_base ) ? $post_type_obj->rest_base : $post_type_obj->name;
 	}
 
 	/**

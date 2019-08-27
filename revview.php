@@ -280,8 +280,7 @@ class Revview {
 
 			wp_enqueue_style( 'revview', plugins_url( 'css/revview-front.css' , __FILE__ ) );
 			wp_register_script( 'revview-date', plugins_url( 'js/revview-date.js' , __FILE__ ) );
-			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date'
-			) );
+			wp_enqueue_script( 'revview', plugins_url( 'js/revview-front.js' , __FILE__ ), array( 'wp-api', 'wp-util', 'jquery-ui-slider', 'revview-date' ) );
 			wp_localize_script( 'revview', 'revview', apply_filters( 'revview_selection_ui_js_variables', array(
 				'rest_base' => $rest_base,
 				'post_id' => get_the_ID(),
