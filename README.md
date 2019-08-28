@@ -1,5 +1,5 @@
 # revview
-Provides public access to post revisions using the WordPress REST API. Requires the latest version 2.0 under development at https://github.com/WP-API/WP-API
+Provides public access to post revisions using the WordPress REST API.
 
 ##Endpoints
 The plugin adds two endpoints to display, for a given entry and provided that its post type is visible for REST, all revisions or a single revision:
@@ -25,14 +25,10 @@ returns a list of objects for all revisions containing revision ID, author name 
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
 ##Usage
-0. Install WordPress 4.4 alpha (mandatory due to new stuff the REST API uses) https://wordpress.org/nightly-builds/wordpress-latest.zip
+1. Download Revview plugin https://github.com/eliorivero/revview/archive/master.zip
 
-1. Download latest REST API in development https://github.com/WP-API/WP-API/archive/develop.zip
+2. Install and activate.
 
-2. Download Revview plugin https://github.com/eliorivero/revview/archive/master.zip
+3. If you now go to the front end view of a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post, page or custom post type if it's visible in REST API.
 
-3. Install and activate both.
-
-4. If you now go to a post or page that has revisions, you'll see a button **View Revisions** at the top. Click it to start viewing the revisions of the post, page or custom post type if it's visible in REST API.
-
-The placement of the View Revisions button can be changed in WP Admin > Settings > Reading.
+The placement of the **View Revisions** button can be changed in WP Admin > Settings > Reading.
