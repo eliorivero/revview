@@ -1,7 +1,7 @@
 # revview
 Provides public access to post revisions using the WordPress REST API.
 
-##Endpoints
+## Endpoints
 The plugin adds two endpoints to display, for a given entry and provided that its post type is visible for REST, all revisions or a single revision:
 
 
@@ -24,7 +24,7 @@ returns a list of objects for all revisions containing revision ID, author name 
 
 The JSON object returned includes the title, content, excerpt and revision date, among other data.
 
-##Usage
+## Usage
 1. Download Revview plugin https://github.com/eliorivero/revview/archive/master.zip
 
 2. Install and activate.
