@@ -196,7 +196,6 @@ var wpApiSettings, wp, TimeStampedMixin, HierarchicalMixin, revview;
 		 */
 		render: function() {
 			this.selectorRevisions = _.each( this.model.get( 'revisions' ).invoke( 'pick', [ 'author_name', 'date' ] ), function( revision ) {
-				console.log( revview.datetime_format, revision.date );
 				revision.date = moment( revision.date ).formatPHP( revview.datetime_format );
 			});
 
